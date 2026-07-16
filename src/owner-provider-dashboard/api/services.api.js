@@ -25,7 +25,14 @@ export async function getProviderServices() {
   if (useMock) {
     return Promise.resolve(getMockProviderServices());
   }
-  const { data } = await providerAxiosClient.get('/providers/me/services');
+  const { data } = await providerAxiosClient.get('/providers/me/services', {
+    params: {
+      limit: 1000,
+      all: true,
+      includeInactive: true,
+      status: 'ALL'
+    }
+  });
   // The endpoint returns { items: [...] }; unwrap to a plain array.
   return Array.isArray(data?.items) ? data.items : [];
 }

@@ -47,6 +47,10 @@ export default function PlatformBankAccountsPage() {
         bankName,
         accountLast4,
         currency
+      }, {
+        headers: {
+          'Idempotency-Key': crypto.randomUUID()
+        }
       });
 
       toast.success('تمت إضافة الحساب بنجاح');

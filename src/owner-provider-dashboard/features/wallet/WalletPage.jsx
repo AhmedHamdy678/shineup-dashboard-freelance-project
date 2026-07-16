@@ -35,11 +35,16 @@ export default function WalletPage() {
 
   const handleAddBankSubmit = (e) => {
     e.preventDefault();
+    
+    // Clean IBAN
+    const cleanIban = bankForm.iban ? bankForm.iban.replace(/\s+/g, '').toUpperCase() : '';
+
     addPayoutMutation.mutate(
       {
         payload: {
           ...bankForm,
-          type: 'BANK_TRANSFER',
+          iban: cleanIban,
+          type: 'BANK_ACCOUNT',
           beneficiaryCountry: 'SA',
           isDefault: false
         },
@@ -59,8 +64,22 @@ export default function WalletPage() {
           });
         },
         onError: (err) => {
-          const msg = err.response?.data?.message || err.response?.data?.error || err.message;
-          toast.error(`حدث خطأ أثناء إضافة الحساب: ${msg}`);
+          const data = err.response?.data;
+          let msg = data?.message || data?.error || err.message;
+          
+          if (Array.isArray(msg)) {
+            msg = msg.join(' | ');
+          }
+          
+          if (data?.errors) {
+            if (Array.isArray(data.errors)) {
+              msg = data.errors.map(e => typeof e === 'string' ? e : e.msg || JSON.stringify(e)).join(' | ');
+            } else if (typeof data.errors === 'object') {
+              msg = Object.values(data.errors).flat().join(' | ');
+            }
+          }
+          
+          toast.error(`حدث خطأ: ${msg}`);
         }
       }
     );

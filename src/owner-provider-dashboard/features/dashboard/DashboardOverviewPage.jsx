@@ -45,7 +45,7 @@ export default function DashboardOverviewPage() {
   if (isError || !data) {
     return (
       <div className="p-6 text-center">
-        <p className="text-red-500 font-medium">Failed to load dashboard data. Please try again.</p>
+        <p className="text-red-500 font-medium">فشل تحميل بيانات لوحة التحكم. يرجى المحاولة مرة أخرى.</p>
       </div>
     );
   }
@@ -53,8 +53,8 @@ export default function DashboardOverviewPage() {
   const { provider = {}, bookings = {}, members = {}, services = {}, reviews = {}, payments = {} } = data;
 
   const formatCurrency = (amount) => {
-    if (typeof amount !== 'number') return amount || '$0';
-    return `$${amount.toLocaleString()}`;
+    if (typeof amount !== 'number') return amount || '0 ر.س';
+    return `${amount.toLocaleString()} ر.س`;
   };
 
   return (
@@ -63,25 +63,25 @@ export default function DashboardOverviewPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
-            Welcome back, {provider.nameBusiness || 'Provider'} 👋
+            مرحباً بعودتك، {provider.nameBusiness || 'مزود الخدمة'} 👋
           </h1>
           <span className={`px-3 py-1 rounded-full text-xs font-bold tracking-wide ${
             provider.status === "APPROVED" ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"
           }`}>
-            {provider.status || 'PENDING'}
+            {provider.status === "APPROVED" ? "معتمد" : "قيد المراجعة"}
           </span>
         </div>
         
         {/* Toggle Switch */}
         <div className="flex items-center gap-3">
           <span className="text-sm font-medium text-gray-600">
-            {provider.availableIs ? 'Active' : 'Inactive'}
+            {provider.availableIs ? 'متاح' : 'غير متاح'}
           </span>
           <div className={`w-12 h-6 rounded-full p-1 cursor-pointer transition-colors ${
             provider.availableIs ? 'bg-emerald-500' : 'bg-gray-300'
           }`}>
             <div className={`w-4 h-4 rounded-full bg-white shadow-sm transform transition-transform ${
-              provider.availableIs ? 'translate-x-6' : 'translate-x-0'
+              provider.availableIs ? '-translate-x-6' : 'translate-x-0'
             }`}></div>
           </div>
         </div>
@@ -90,29 +90,29 @@ export default function DashboardOverviewPage() {
       {/* Top KPIs Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
         <StatCard
-          title="Total Revenue (This Month)"
+          title="إجمالي الأرباح (هذا الشهر)"
           value={formatCurrency(payments.paidAmountThisMonth)}
           icon={DollarSign}
           iconColor="text-emerald-600"
           iconBg="bg-emerald-50"
         />
         <StatCard
-          title="Total Bookings (This Month)"
+          title="إجمالي الحجوزات (هذا الشهر)"
           value={bookings.totalThisMonth || 0}
           icon={CalendarCheck}
           iconColor="text-blue-600"
           iconBg="bg-blue-50"
         />
         <StatCard
-          title="Average Rating"
+          title="متوسط التقييم"
           value={reviews.averageRating?.toFixed(1) || '0.0'}
-          subtext={`(${reviews.reviewsCount || 0} reviews)`}
+          subtext={`(${reviews.reviewsCount || 0} تقييم)`}
           icon={Star}
           iconColor="text-amber-500"
           iconBg="bg-amber-50"
         />
         <StatCard
-          title="Active Services"
+          title="الخدمات النشطة"
           value={`${services.available || 0} / ${services.total || 0}`}
           icon={Layers}
           iconColor="text-indigo-600"

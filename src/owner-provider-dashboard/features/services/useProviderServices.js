@@ -40,9 +40,23 @@ export function useUpdateProviderService() {
 
   return useMutation({
     mutationFn: updateProviderService,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["provider-services"] });
+    onMutate: async (updatedData) => {
+      await queryClient.cancelQueries({ queryKey: ["provider-services"] });
+      const previousServices = queryClient.getQueryData(["provider-services"]);
+      
+      if (previousServices) {
+        queryClient.setQueryData(["provider-services"], old => {
+          if (!old) return old;
+          return old.map(s => s.id === updatedData.id ? { ...s, ...updatedData } : s);
+        });
+      }
+      return { previousServices };
     },
+    onError: (err, variables, context) => {
+      if (context?.previousServices) {
+        queryClient.setQueryData(["provider-services"], context.previousServices);
+      }
+    }
   });
 }
 
