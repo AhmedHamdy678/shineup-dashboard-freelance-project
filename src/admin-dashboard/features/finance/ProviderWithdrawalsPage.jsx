@@ -6,11 +6,13 @@ import { CreditCard, AlertCircle, FileText, Upload, CheckCircle2 } from 'lucide-
 import { v4 as uuidv4 } from 'uuid';
 import Pagination from '../../../shared/components/ui/Pagination';
 import Modal from '../../../shared/components/ui/Modal';
+import ApproveWithdrawalModal from './ApproveWithdrawalModal';
 
 const statusConfig = {
   APPROVED: { label: 'بانتظار الدفع', color: 'bg-blue-100 text-blue-700' },
   PAID: { label: 'مدفوع', color: 'bg-green-100 text-green-700' },
   PENDING: { label: 'معلق', color: 'bg-yellow-100 text-yellow-700' },
+  REQUESTED: { label: 'بانتظار الموافقة', color: 'bg-orange-100 text-orange-700' },
   REJECTED: { label: 'مرفوض', color: 'bg-red-100 text-red-700' }
 };
 
@@ -22,6 +24,7 @@ export default function ProviderWithdrawalsPage() {
 
   const [markPaidModal, setMarkPaidModal] = useState(null);
   const [viewDetailsModal, setViewDetailsModal] = useState(null);
+  const [approveWithdrawalId, setApproveWithdrawalId] = useState(null);
 
   const [formData, setFormData] = useState({
     sourceAccountId: '',
@@ -212,6 +215,14 @@ export default function ProviderWithdrawalsPage() {
                         {formatDate(item.requestedAt || item.createdAt)}
                       </td>
                       <td className="px-6 py-4 text-center">
+                        {item.status === 'REQUESTED' && (
+                          <button
+                            onClick={() => setApproveWithdrawalId(item.id)}
+                            className="text-white bg-blue-600 hover:bg-blue-700 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors"
+                          >
+                            تأكيد الدفع
+                          </button>
+                        )}
                         {item.status === 'PENDING' && (
                           <button
                             onClick={() => setMarkPaidModal({ item, actionType: 'APPROVE_AND_PAY' })}
@@ -361,7 +372,11 @@ export default function ProviderWithdrawalsPage() {
 
       {/* View Details Modal */}
       {viewDetailsModal && (
-        <Modal title="تفاصيل الدفع" onClose={() => setViewDetailsModal(null)} size="md">
+        <Modal 
+          title="تفاصيل الدفع (Payment Details)" 
+          onClose={() => setViewDetailsModal(null)}
+          size="md"
+        >
           <div className="space-y-5">
             <div className="flex items-center justify-center p-4 bg-green-50 rounded-lg text-green-700">
               <div className="flex flex-col items-center gap-2">
@@ -406,6 +421,12 @@ export default function ProviderWithdrawalsPage() {
           </div>
         </Modal>
       )}
+
+      <ApproveWithdrawalModal 
+        isOpen={!!approveWithdrawalId} 
+        onClose={() => setApproveWithdrawalId(null)} 
+        withdrawalId={approveWithdrawalId} 
+      />
     </div>
   );
 }
