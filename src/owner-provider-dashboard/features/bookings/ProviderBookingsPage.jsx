@@ -1,0 +1,237 @@
+import { useState, useEffect, useRef } from "react";
+import { Calendar, Search, Filter, Clock, Car, MoreHorizontal, Eye } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useProviderBookings, useUpdateBookingStatus } from "./useProviderBookings";
+
+
+const statusFilters = ["all", "pending", "confirmed", "completed", "cancelled"];
+
+const statusLabels = {
+  pending: "معلق",
+  confirmed: "مؤكد",
+  completed: "مكتمل",
+  cancelled: "ملغي",
+};
+
+export default function ProviderBookingsPage() {
+  const [filter, setFilter] = useState("all");
+  const [search, setSearch] = useState("");
+  const [openMenuId, setOpenMenuId] = useState(null);
+  const navigate = useNavigate();
+  const dropdownRef = useRef(null);
+
+  const { data: bookings, isLoading } = useProviderBookings();
+  const { mutate: updateStatus } = useUpdateBookingStatus();
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setOpenMenuId(null);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const items = Array.isArray(bookings) ? bookings : (bookings?.items || []);
+  const filtered = items.filter((b) => {
+    const customerName = b.booking?.customer?.fullName || b.customerName || "";
+    const serviceName = b.booking?.items?.[0]?.serviceName || b.serviceName || "";
+    const matchesSearch = customerName.includes(search) || serviceName.includes(search);
+    
+    if (filter === "all") return matchesSearch;
+    
+    const status = (b.booking?.bookingStatus?.code || b.requestStatus?.code || b.status || "").toLowerCase();
+    let displayStatus = status;
+    if (status.includes('cancel')) displayStatus = 'cancelled';
+    else if (status.includes('accept') || status.includes('confirm')) displayStatus = 'confirmed';
+    else if (status.includes('complet')) displayStatus = 'completed';
+    else if (status.includes('pend')) displayStatus = 'pending';
+    
+    return matchesSearch && displayStatus === filter;
+  });
+
+  if (isLoading) return <div className="p-6 text-gray-500">جارٍ التحميل...</div>;
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">الحجوزات</h1>
+          <p className="text-gray-500 mt-1">إدارة جميع الحجوزات الواردة</p>
+        </div>
+        <div className="flex items-center gap-2 text-sm text-gray-500 bg-white border border-gray-200 rounded-lg px-3 py-2">
+          <Calendar className="w-4 h-4" />
+          {new Date().toLocaleDateString("ar-EG")}
+        </div>
+      </div>
+
+      <div className="flex items-center gap-3">
+        <div className="relative flex-1 max-w-xs">
+          <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="بحث..."
+            className="w-full pr-9 pl-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+          />
+        </div>
+        <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
+          {statusFilters.map((s) => (
+            <button
+              key={s}
+              onClick={() => setFilter(s)}
+              className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                filter === s
+                  ? "bg-white text-gray-900 shadow-sm"
+                  : "text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              {s === "all" ? "الكل" : statusLabels[s]}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-gray-100 bg-gray-50">
+                <th className="text-right px-4 py-3 font-medium text-gray-500 w-12">#</th>
+                <th className="text-right px-4 py-3 font-medium text-gray-500">كود الحجز</th>
+                <th className="text-right px-4 py-3 font-medium text-gray-500">العميل</th>
+                <th className="text-right px-4 py-3 font-medium text-gray-500">تفاصيل الخدمة</th>
+                <th className="text-right px-4 py-3 font-medium text-gray-500">مُسند إلى</th>
+                <th className="text-right px-4 py-3 font-medium text-gray-500">التاريخ والوقت</th>
+                <th className="text-right px-4 py-3 font-medium text-gray-500">المبلغ والدفع</th>
+                <th className="text-right px-4 py-3 font-medium text-gray-500">الحالة</th>
+                <th className="text-right px-4 py-3 font-medium text-gray-500">الإجراءات</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.length === 0 ? (
+                <tr>
+                  <td colSpan={9} className="text-center py-8 text-gray-400">لا توجد حجوزات</td>
+                </tr>
+              ) : filtered.map((b, index) => {
+                const bookingCode = b.booking?.codeBooking || b.bookingId || `#BKG-${typeof b.id === 'string' ? b.id.substring(0, 8) : b.id}`;
+                const customerName = b.booking?.customer?.fullName || b.customerName;
+                const customerPhone = b.booking?.customer?.phone || b.customerPhone || "01000000000";
+                const serviceName = b.booking?.items?.[0]?.serviceName || b.serviceName;
+                const carTypeDetails = b.booking?.car ? `${b.booking.car.brand} ${b.booking.car.model}` : (b.booking?.items?.[0]?.carTypeName || b.carTypeDetails || "سيدان");
+                const assignedTeamMember = b.targetedProviderMember?.name || b.assignedTeamMember || "غير محدد";
+                const assignedRole = b.assignedRole || "عضو فريق";
+                
+                let dateStr = b.date;
+                let timeStr = b.timeSlot;
+                if (b.booking?.scheduledAt) {
+                  const scheduled = new Date(b.booking.scheduledAt);
+                  dateStr = scheduled.toLocaleDateString("ar-EG");
+                  timeStr = scheduled.toLocaleTimeString("ar-EG", { hour: '2-digit', minute: '2-digit' });
+                } else if (!dateStr) {
+                  dateStr = "غير محدد";
+                  timeStr = "غير محدد";
+                }
+                
+                const amount = b.booking?.items?.[0] ? `${b.booking.items[0].priceTotalCustomer} ${b.booking.items[0].currency}` : b.amount;
+                const status = (b.booking?.bookingStatus?.code || b.requestStatus?.code || b.status || "").toLowerCase();
+                const paymentStatus = b.paymentStatus || "الدفع عند الوصول";
+
+                let displayStatus = status;
+                if (status.includes('cancel')) displayStatus = 'cancelled';
+                else if (status.includes('accept') || status.includes('confirm')) displayStatus = 'confirmed';
+                else if (status.includes('complet')) displayStatus = 'completed';
+                else if (status.includes('pend')) displayStatus = 'pending';
+
+                return (
+                <tr key={b.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+                  <td className="px-4 py-3 text-gray-500 font-medium">{index + 1}</td>
+                  <td className="px-4 py-3 font-medium text-gray-900">{bookingCode}</td>
+                  <td className="px-4 py-3">
+                    <div className="font-medium text-gray-900">{customerName}</div>
+                    <div className="text-xs text-gray-500 mt-0.5">{customerPhone}</div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="text-gray-900">{serviceName}</div>
+                    <div className="flex items-center gap-1 text-xs text-gray-500 mt-0.5">
+                      <Car className="w-3 h-3" />
+                      {carTypeDetails}
+                    </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="text-gray-900">{assignedTeamMember}</div>
+                    <div className="text-xs text-gray-400 mt-0.5">{assignedRole}</div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="text-gray-900">{dateStr}</div>
+                    <div className="flex items-center gap-1 text-xs text-gray-500 mt-0.5">
+                      <Clock className="w-3 h-3" />
+                      {timeStr}
+                    </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="font-semibold text-gray-900">{amount}</div>
+                    <div className="mt-1">
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium ${
+                        paymentStatus === 'Paid' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
+                      }`}>
+                        {paymentStatus === 'Paid' ? 'مدفوع' : 'الدفع عند الوصول'}
+                      </span>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className={`inline-flex items-center gap-1.5 text-sm font-medium ${
+                      displayStatus === "confirmed" ? "text-emerald-600" :
+                      displayStatus === "pending" ? "text-amber-600" :
+                      displayStatus === "completed" ? "text-blue-600" : "text-red-600"
+                    }`}>
+                      <span className={`w-1.5 h-1.5 rounded-full ${
+                        displayStatus === "confirmed" ? "bg-emerald-500" :
+                        displayStatus === "pending" ? "bg-amber-500" :
+                        displayStatus === "completed" ? "bg-blue-500" : "bg-red-500"
+                      }`} />
+                      {statusLabels[displayStatus] || (b.booking?.bookingStatus?.label || b.requestStatus?.label || status)}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 relative">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setOpenMenuId(openMenuId === b.id ? null : b.id);
+                      }}
+                      className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                    >
+                      <MoreHorizontal className="w-5 h-5" />
+                    </button>
+                    
+                    {openMenuId === b.id && (
+                      <div 
+                        ref={dropdownRef}
+                        className="absolute left-4 top-10 mt-1 w-40 bg-white border border-gray-100 rounded-lg shadow-lg py-1 z-50"
+                      >
+                        <button
+                          onClick={() => {
+                            setOpenMenuId(null);
+                            navigate(`/provider/bookings/${b.id}`);
+                          }}
+                          className="w-full text-right px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                        >
+                          <Eye className="w-4 h-4 text-gray-400" />
+                          عرض التفاصيل
+                        </button>
+                        {/* We can add back the confirm/cancel actions here later if needed */}
+                      </div>
+                    )}
+                  </td>
+                </tr>
+              )})}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
