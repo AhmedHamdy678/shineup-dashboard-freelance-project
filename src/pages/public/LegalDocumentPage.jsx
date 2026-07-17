@@ -2,7 +2,9 @@ import { useQuery } from '@tanstack/react-query';
 import axiosClient from '../../admin-dashboard/api/axiosClient';
 
 const fetchLegalDocument = async (slug) => {
-  const { data } = await axiosClient.get(`/legal/documents/${slug}`);
+  const { data } = await axiosClient.get(`/legal/documents/${slug}`, {
+    headers: { 'Accept-Language': 'ar' },
+  });
   return data;
 };
 
