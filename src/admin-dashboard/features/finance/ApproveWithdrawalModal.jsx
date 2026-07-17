@@ -4,15 +4,19 @@ import axiosClient from '../../api/axiosClient';
 import toast from 'react-hot-toast';
 import Modal from '../../../shared/components/ui/Modal';
 
+import { v4 as uuidv4 } from 'uuid';
+
 export function useApproveWithdrawal() {
   return useMutation({
     mutationFn: async ({ withdrawalId, formData }) => {
+      const idempotencyKey = uuidv4();
       const res = await axiosClient.post(
         `/admin/provider-withdrawals/${withdrawalId}/approve-and-mark-paid`,
         formData,
         {
           headers: {
             'Content-Type': 'multipart/form-data',
+            'Idempotency-Key': idempotencyKey,
           },
         }
       );

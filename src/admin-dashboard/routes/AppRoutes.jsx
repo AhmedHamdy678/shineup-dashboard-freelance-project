@@ -41,6 +41,7 @@ const ProviderLoginPage = lazy(() => import("../../owner-provider-dashboard/feat
 const ProviderRegisterPage = lazy(() => import("../../owner-provider-dashboard/features/auth/ProviderRegisterPage"));
 const ProviderOnboardingPage = lazy(() => import("../../owner-provider-dashboard/features/profile/ProviderOnboardingPage"));
 const ProviderPendingApprovalPage = lazy(() => import("../../owner-provider-dashboard/features/auth/ProviderPendingApprovalPage"));
+const LegalDocumentPage = lazy(() => import("../../pages/public/LegalDocumentPage"));
 
 function SuspenseWrapper({ children }) {
   return <Suspense fallback={<PageSkeleton />}>{children}</Suspense>;
@@ -53,6 +54,11 @@ export default function AppRoutes() {
       <Route path="/login" element={<SuspenseWrapper><LoginPage /></SuspenseWrapper>} />
       <Route path="/provider/login" element={<SuspenseWrapper><ProviderLoginPage /></SuspenseWrapper>} />
       <Route path="/provider/register" element={<SuspenseWrapper><ProviderRegisterPage /></SuspenseWrapper>} />
+      
+      {/* Public legal routes */}
+      <Route path="/terms" element={<SuspenseWrapper><LegalDocumentPage documentSlug="terms-and-conditions" /></SuspenseWrapper>} />
+      <Route path="/privacy-policy" element={<SuspenseWrapper><LegalDocumentPage documentSlug="privacy-policy" /></SuspenseWrapper>} />
+
 
       {/* Admin routes */}
       <Route element={<ProtectedRoute />}>

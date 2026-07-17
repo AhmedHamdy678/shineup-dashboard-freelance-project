@@ -173,6 +173,26 @@ export default function LoginPage() {
                 إنشاء حساب
               </Link>
             </p>
+            <div className="text-xs text-gray-500 mt-6 text-center">
+              بتسجيل الدخول، فإنك توافق على{' '}
+              <Link
+                to="/terms"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 hover:underline"
+              >
+                الشروط والأحكام
+              </Link>{' '}
+              و{' '}
+              <Link
+                to="/privacy-policy"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 hover:underline"
+              >
+                سياسة الخصوصية
+              </Link>.
+            </div>
           </form>
         </div>
       </div>
