@@ -204,7 +204,7 @@ export default function ServiceModal({ service, existingServices = [], onClose, 
                     </div>
                     <div className="flex-1">
                       <label className="block text-xs text-gray-500 mb-1">
-                        Price (EGP)
+                        Price (SAR)
                       </label>
                       <input
                         type="number"

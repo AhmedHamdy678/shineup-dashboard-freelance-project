@@ -42,6 +42,7 @@ const ProviderRegisterPage = lazy(() => import("../../owner-provider-dashboard/f
 const ProviderOnboardingPage = lazy(() => import("../../owner-provider-dashboard/features/profile/ProviderOnboardingPage"));
 const ProviderPendingApprovalPage = lazy(() => import("../../owner-provider-dashboard/features/auth/ProviderPendingApprovalPage"));
 const LegalDocumentPage = lazy(() => import("../../pages/public/LegalDocumentPage"));
+const AccountDeletionPage = lazy(() => import("../../pages/public/AccountDeletionPage"));
 
 function SuspenseWrapper({ children }) {
   return <Suspense fallback={<PageSkeleton />}>{children}</Suspense>;
@@ -58,6 +59,7 @@ export default function AppRoutes() {
       {/* Public legal routes */}
       <Route path="/terms" element={<SuspenseWrapper><LegalDocumentPage documentSlug="terms-and-conditions" /></SuspenseWrapper>} />
       <Route path="/privacy-policy" element={<SuspenseWrapper><LegalDocumentPage documentSlug="privacy-policy" /></SuspenseWrapper>} />
+      <Route path="/account-deletion" element={<SuspenseWrapper><AccountDeletionPage /></SuspenseWrapper>} />
 
 
       {/* Admin routes */}

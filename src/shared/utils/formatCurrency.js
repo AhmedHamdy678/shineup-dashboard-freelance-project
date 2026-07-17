@@ -1,7 +1,7 @@
 /**
- * Formats a number as Egyptian Pounds.
- * e.g. 320 -> "EGP 320.00"
+ * Formats a number as Saudi Riyals.
+ * e.g. 320 -> "SAR 320.00"
  */
 export default function formatCurrency(amount) {
-  return `EGP ${Number(amount).toFixed(2)}`;
+  return `SAR ${Number(amount).toFixed(2)}`;
 }

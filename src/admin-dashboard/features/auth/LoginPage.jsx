@@ -174,24 +174,35 @@ export default function LoginPage() {
               </Link>
             </p>
             <div className="text-xs text-gray-500 mt-6 text-center">
-              بتسجيل الدخول، فإنك توافق على{' '}
-              <Link
-                to="/terms"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-600 hover:underline"
-              >
-                الشروط والأحكام
-              </Link>{' '}
-              و{' '}
-              <Link
-                to="/privacy-policy"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-600 hover:underline"
-              >
-                سياسة الخصوصية
-              </Link>.
+              <span className="block mb-2">بتسجيل الدخول، فإنك توافق على الشروط والسياسات:</span>
+              <div className="flex items-center justify-center gap-1.5 flex-wrap">
+                <Link
+                  to="/terms"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:underline"
+                >
+                  الشروط والأحكام
+                </Link>
+                <span className="text-gray-400">•</span>
+                <Link
+                  to="/privacy-policy"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:underline"
+                >
+                  سياسة الخصوصية
+                </Link>
+                <span className="text-gray-400">•</span>
+                <Link
+                  to="/account-deletion"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:underline"
+                >
+                  طلب حذف الحساب
+                </Link>
+              </div>
             </div>
           </form>
         </div>

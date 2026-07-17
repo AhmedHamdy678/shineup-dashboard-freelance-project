@@ -69,12 +69,12 @@ export default function AnalyticsPage() {
         />
         <StatCard
           label="إيرادات المنصة"
-          value={`EGP ${stats.revenue}`}
+          value={`SAR ${stats.revenue}`}
           sub={<Trend value={stats.revenueTrend} />}
         />
         <StatCard
           label="رسوم المنصة"
-          value={`EGP ${stats.platformFees}`}
+          value={`SAR ${stats.platformFees}`}
           sub={<Trend value={stats.feesTrend} />}
         />
         <StatCard
@@ -115,7 +115,7 @@ export default function AnalyticsPage() {
                   <td className="py-3 text-gray-400">{service.rank}</td>
                   <td className="py-3 font-medium text-gray-800">{service.name}</td>
                   <td className="py-3 text-blue-500 font-medium">{service.bookings}</td>
-                  <td className="py-3 text-end text-gray-700">EGP {service.totalValue}</td>
+                  <td className="py-3 text-end text-gray-700">SAR {service.totalValue}</td>
                 </tr>
               ))}
             </tbody>
@@ -161,7 +161,7 @@ export default function AnalyticsPage() {
                     <td className="py-3 font-medium text-gray-800">{biz.name}</td>
                     <td className="py-3 text-gray-600">{biz.rating ?? '\u2014'}</td>
                     <td className="py-3 text-gray-600">{biz.bookings}</td>
-                    <td className="py-3 text-end text-gray-700">EGP {biz.netRevenue}</td>
+                    <td className="py-3 text-end text-gray-700">SAR {biz.netRevenue}</td>
                   </tr>
                 ))
               )}

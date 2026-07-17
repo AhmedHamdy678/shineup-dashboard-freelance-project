@@ -172,7 +172,7 @@ export default function ProviderServicesPage() {
                       <div className="flex items-center justify-between text-sm text-gray-600 mb-3">
                         <div className="flex items-center gap-1.5 font-semibold text-emerald-600">
                           <Coins className="w-4 h-4" />
-                          <span>{prices.length > 0 ? `Starts from ${minPrice} EGP` : "0 EGP"}</span>
+                          <span>{prices.length > 0 ? `Starts from ${minPrice} SAR` : "0 SAR"}</span>
                         </div>
                         <div className="flex items-center gap-1.5 text-gray-500 font-medium">
                           <Clock className="w-4 h-4 text-gray-400" />
@@ -201,7 +201,7 @@ export default function ProviderServicesPage() {
                                   </span>
                                   <span className="text-sm font-semibold text-emerald-600 flex items-center gap-1">
                                     <Coins className="w-3.5 h-3.5" />
-                                    {price.priceProvider} EGP
+                                    {price.priceProvider} SAR
                                   </span>
                                 </div>
                               </div>

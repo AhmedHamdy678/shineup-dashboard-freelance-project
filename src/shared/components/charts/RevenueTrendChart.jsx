@@ -11,7 +11,7 @@ export default function RevenueTrendChart({ data }) {
         <XAxis dataKey="month" tick={{ fontSize: 12, fill: '#9CA3AF' }} axisLine={false} tickLine={false} />
         <YAxis tick={{ fontSize: 12, fill: '#9CA3AF' }} axisLine={false} tickLine={false} />
         <Tooltip
-          formatter={(value) => [`EGP ${value}`, 'Revenue']}
+          formatter={(value) => [`SAR ${value}`, 'Revenue']}
           contentStyle={{ borderRadius: 8, border: '1px solid #e5e7eb', fontSize: 13 }}
         />
         <Bar dataKey="revenue" fill="#3B82F6" radius={[4, 4, 0, 0]} />
