@@ -4,6 +4,7 @@ import axiosClient from '../../api/axiosClient';
 import toast from 'react-hot-toast';
 import { Landmark, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
+import { useNavigate } from 'react-router-dom';
 import Pagination from '../../../shared/components/ui/Pagination';
 import Modal from '../../../shared/components/ui/Modal';
 
@@ -12,6 +13,7 @@ export default function ProviderPayoutMethodsPage() {
   const pageSize = 10;
   const [verifyModalItem, setVerifyModalItem] = useState(null);
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ['provider-payout-methods', page],
@@ -109,7 +111,11 @@ export default function ProviderPayoutMethodsPage() {
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {items.map((item) => (
-                  <tr key={item.id || Math.random()} className="hover:bg-gray-50/50 transition-colors">
+                  <tr 
+                    key={item.id || Math.random()} 
+                    className="hover:bg-gray-50/50 transition-colors cursor-pointer"
+                    onClick={() => navigate(`/admin/provider-payout-methods/${item.id}`)}
+                  >
                     <td className="px-6 py-4">
                       <div className="font-medium text-gray-900">{item.provider?.name || 'غير معروف'}</div>
                       <div className="text-xs text-gray-500 mt-0.5">{item.provider?.type || ''}</div>
@@ -136,21 +142,27 @@ export default function ProviderPayoutMethodsPage() {
                     <td className="px-6 py-4 text-center text-gray-500">
                       {formatDate(item.createdAt)}
                     </td>
-                    <td className="px-6 py-4 text-center">
+                    <td className="px-6 py-4 text-center" onClick={(e) => e.stopPropagation()}>
                       {item.verificationStatus === 'PENDING' ? (
                         <button
-                          onClick={() => setVerifyModalItem(item)}
-                          className="text-green-600 bg-white border border-green-600 hover:bg-green-50 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/admin/provider-payout-methods/${item.id}`);
+                          }}
+                          className="text-blue-600 bg-white border border-blue-600 hover:bg-blue-50 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors"
                         >
-                          توثيق
+                          مراجعة الحساب
                         </button>
-                      ) : item.verificationStatus === 'VERIFIED' ? (
-                        <div className="flex items-center justify-center text-green-600 gap-1">
-                          <CheckCircle2 className="w-5 h-5" />
-                          <span className="text-sm font-medium">موثق</span>
-                        </div>
                       ) : (
-                        <span className="text-gray-400 text-sm">-</span>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/admin/provider-payout-methods/${item.id}`);
+                          }}
+                          className="text-gray-700 bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors"
+                        >
+                          عرض التفاصيل
+                        </button>
                       )}
                     </td>
                   </tr>
@@ -172,35 +184,7 @@ export default function ProviderPayoutMethodsPage() {
         )}
       </div>
 
-      {verifyModalItem && (
-        <Modal title="تأكيد التوثيق" onClose={() => !verifyMutation.isPending && setVerifyModalItem(null)} size="sm">
-          <div className="space-y-4">
-            <p className="text-gray-600">
-              هل أنت متأكد من توثيق الحساب البنكي للمزود <strong className="text-gray-900">{verifyModalItem.provider?.name || 'هذا المزود'}</strong>؟
-            </p>
-            <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
-              <button
-                onClick={() => setVerifyModalItem(null)}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
-                disabled={verifyMutation.isPending}
-              >
-                إلغاء
-              </button>
-              <button
-                onClick={() => verifyMutation.mutate(verifyModalItem.id)}
-                className="px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-lg transition-colors flex items-center justify-center min-w-[80px]"
-                disabled={verifyMutation.isPending}
-              >
-                {verifyMutation.isPending ? (
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                ) : (
-                  'تأكيد التوثيق'
-                )}
-              </button>
-            </div>
-          </div>
-        </Modal>
-      )}
+
     </div>
   );
 }

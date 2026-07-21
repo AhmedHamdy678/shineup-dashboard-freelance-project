@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axiosClient from '../../api/axiosClient';
 import toast from 'react-hot-toast';
@@ -21,6 +22,7 @@ export default function ProviderWithdrawalsPage() {
   const pageSize = 10;
   const [activeTab, setActiveTab] = useState('ALL');
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   const [markPaidModal, setMarkPaidModal] = useState(null);
   const [viewDetailsModal, setViewDetailsModal] = useState(null);
@@ -184,7 +186,11 @@ export default function ProviderWithdrawalsPage() {
                 {items.map((item) => {
                   const conf = statusConfig[item.status] || { label: item.status, color: 'bg-gray-100 text-gray-700' };
                   return (
-                    <tr key={item.id} className="hover:bg-gray-50/50 transition-colors">
+                    <tr 
+                      key={item.id} 
+                      className="hover:bg-gray-50/50 transition-colors cursor-pointer"
+                      onClick={() => navigate(`/admin/provider-withdrawals/${item.id}`)}
+                    >
                       <td className="px-6 py-4">
                         <span className="font-mono text-gray-500">{item.id?.substring(0, 8)}</span>
                       </td>
@@ -214,18 +220,18 @@ export default function ProviderWithdrawalsPage() {
                       <td className="px-6 py-4 text-center text-gray-500">
                         {formatDate(item.requestedAt || item.createdAt)}
                       </td>
-                      <td className="px-6 py-4 text-center">
+                      <td className="px-6 py-4 text-center" onClick={(e) => e.stopPropagation()}>
                         {item.status === 'REQUESTED' && (
                           <button
-                            onClick={() => setApproveWithdrawalId(item.id)}
-                            className="text-white bg-blue-600 hover:bg-blue-700 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors"
+                            onClick={(e) => { e.stopPropagation(); navigate(`/admin/provider-withdrawals/${item.id}`); }}
+                            className="text-blue-600 bg-white border border-blue-600 hover:bg-blue-50 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors"
                           >
-                            تأكيد الدفع
+                            مراجعة الطلب
                           </button>
                         )}
                         {item.status === 'PENDING' && (
                           <button
-                            onClick={() => setMarkPaidModal({ item, actionType: 'APPROVE_AND_PAY' })}
+                            onClick={(e) => { e.stopPropagation(); setMarkPaidModal({ item, actionType: 'APPROVE_AND_PAY' }); }}
                             className="text-white bg-green-600 hover:bg-green-700 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors"
                           >
                             اعتماد وصرف
@@ -233,7 +239,7 @@ export default function ProviderWithdrawalsPage() {
                         )}
                         {item.status === 'APPROVED' && (
                           <button
-                            onClick={() => setMarkPaidModal({ item, actionType: 'MARK_PAID' })}
+                            onClick={(e) => { e.stopPropagation(); setMarkPaidModal({ item, actionType: 'MARK_PAID' }); }}
                             className="text-white bg-blue-600 hover:bg-blue-700 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors"
                           >
                             تنفيذ الدفع
@@ -241,7 +247,7 @@ export default function ProviderWithdrawalsPage() {
                         )}
                         {item.status === 'PAID' && (
                           <button
-                            onClick={() => setViewDetailsModal(item)}
+                            onClick={(e) => { e.stopPropagation(); setViewDetailsModal(item); }}
                             className="text-gray-600 bg-white border border-gray-300 hover:bg-gray-50 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors"
                           >
                             عرض التفاصيل
