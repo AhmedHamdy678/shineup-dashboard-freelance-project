@@ -7,6 +7,8 @@ import { getConversationDetails, getMessageHistory, sendMessage } from '../../..
 import { useChatSocket } from '../useChatSocket';
 import { Send, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import AdminSupportQueue from '../../support/components/AdminSupportQueue';
+import AdminSupportThread from '../../support/components/AdminSupportThread';
 
 export default function AdminChatPage() {
   useChatSocket();
@@ -15,6 +17,7 @@ export default function AdminChatPage() {
   const setActiveConversation = useChatStore((s) => s.setActiveConversation);
   const user = useAuthStore((s) => s.user);
   const [activeTab, setActiveTab] = useState('CUSTOMER'); // 'CUSTOMER' | 'PROVIDER'
+  const [selectedSupportConversation, setSelectedSupportConversation] = useState(null);
   const [inputText, setInputText] = useState('');
   const messagesEndRef = useRef(null);
   const queryClient = useQueryClient();
@@ -117,23 +120,28 @@ export default function AdminChatPage() {
         </div>
         
         {/* Conversations List */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-hidden flex flex-col">
           {activeTab === 'CUSTOMER' ? (
-            <SupportConversationsList />
-          ) : (
-            <div className="p-8 text-center flex flex-col items-center">
-              <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center mb-3">
-                <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
-              </div>
-              <p className="text-gray-500 font-medium">سيتم ربط محادثات مقدمي الخدمات قريباً</p>
+            <div className="flex-1 overflow-y-auto">
+              <SupportConversationsList />
             </div>
+          ) : (
+            <AdminSupportQueue 
+              onSelectConversation={setSelectedSupportConversation} 
+              selectedId={selectedSupportConversation?.conversationId}
+            />
           )}
         </div>
       </div>
 
       {/* Right Pane (Main Area) */}
       <div className="flex-1 flex flex-col overflow-hidden bg-white">
-        {activeId ? (
+        {activeTab === 'PROVIDER' ? (
+          <AdminSupportThread 
+            selectedConversation={selectedSupportConversation} 
+            onConversationUpdated={() => queryClient.invalidateQueries(['admin-support-conversations'])} 
+          />
+        ) : activeId ? (
           <>
             <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between shadow-sm z-10 bg-white">
               <div>

@@ -19,7 +19,6 @@ export const providerBusinessNav = [
 export const providerSettingsNav = [
   { label: "الملف التجاري", icon: Building2, path: "/provider/profile" },
   { label: "الإعدادات", icon: Settings, path: "/provider/settings" },
-  { label: "الدعم الفني", icon: LifeBuoy, path: "/provider/support" },
 ];
 
 export const providerAllNav = [
