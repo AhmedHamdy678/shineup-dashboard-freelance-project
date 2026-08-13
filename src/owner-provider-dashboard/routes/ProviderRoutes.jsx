@@ -11,12 +11,15 @@ const ProviderBookingDetailsPage = lazy(() => import("../features/bookings/Booki
 const TeamPage = lazy(() => import("../features/team/TeamPage"));
 const TeamMemberAnalyticsPage = lazy(() => import("../features/team/TeamMemberAnalyticsPage"));
 const ProviderServicesPage = lazy(() => import("../features/services/ProviderServicesPage"));
+const ServiceZonesPage = lazy(() => import("../features/service-zones/ServiceZonesPage"));
 const ProviderReviewsPage = lazy(() => import("../features/reviews/ProviderReviewsPage"));
 const WalletPage = lazy(() => import("../features/wallet/WalletPage"));
 const ProviderProfilePage = lazy(() => import("../features/profile/ProviderProfilePage"));
 const ProviderSettingsPage = lazy(() => import("../features/settings/ProviderSettingsPage"));
 const ProviderChatPage = lazy(() => import("../features/chat/ProviderChatPage"));
 const ProviderNotificationsPage = lazy(() => import("../features/notifications/ProviderNotificationsPage"));
+const ProviderPromotionsPage = lazy(() => import("../features/promotions/ProviderPromotionsPage"));
+const ProviderSupportPage = lazy(() => import("../features/support/ProviderSupportPage"));
 
 function SuspenseWrapper({ children }) {
   return <Suspense fallback={<PageSkeleton />}>{children}</Suspense>;
@@ -35,9 +38,12 @@ export default function ProviderRoutes() {
           <Route path="/provider/team" element={<SuspenseWrapper><TeamPage /></SuspenseWrapper>} />
           <Route path="/provider/team/:memberId" element={<SuspenseWrapper><TeamMemberAnalyticsPage /></SuspenseWrapper>} />
           <Route path="/provider/services" element={<SuspenseWrapper><ProviderServicesPage /></SuspenseWrapper>} />
+          <Route path="/provider/service-zones" element={<SuspenseWrapper><ServiceZonesPage /></SuspenseWrapper>} />
           <Route path="/provider/chat" element={<SuspenseWrapper><ProviderChatPage /></SuspenseWrapper>} />
           <Route path="/provider/notifications" element={<SuspenseWrapper><ProviderNotificationsPage /></SuspenseWrapper>} />
           <Route path="/provider/reviews" element={<SuspenseWrapper><ProviderReviewsPage /></SuspenseWrapper>} />
+          <Route path="/provider/promotions" element={<SuspenseWrapper><ProviderPromotionsPage /></SuspenseWrapper>} />
+          <Route path="/provider/support" element={<SuspenseWrapper><ProviderSupportPage /></SuspenseWrapper>} />
           <Route path="/provider/wallet" element={<SuspenseWrapper><WalletPage /></SuspenseWrapper>} />
           <Route path="/provider/profile" element={<SuspenseWrapper><ProviderProfilePage /></SuspenseWrapper>} />
           <Route path="/provider/settings" element={<SuspenseWrapper><ProviderSettingsPage /></SuspenseWrapper>} />

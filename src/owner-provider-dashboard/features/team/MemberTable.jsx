@@ -1,6 +1,7 @@
 import { Edit, Trash2, Eye } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Toggle from '../../../shared/components/ui/Toggle';
+import useProviderAuth from '../../hooks/useProviderAuth';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -48,6 +49,7 @@ export default function MemberTable({
 }) {
   const rows = members || [];
   const navigate = useNavigate();
+  const { user: currentUser } = useProviderAuth();
 
   const handleEdit = (member) => {
     if (onEdit) onEdit(member);
@@ -83,6 +85,7 @@ export default function MemberTable({
           <tbody className="divide-y divide-gray-50 bg-white">
             {rows.map((m, idx) => {
               const isActive = m.userIsActive ?? (m.status === 'ACTIVE');
+              const isOwner = m.userId === currentUser?.id || m.role === 'OWNER';
               const gradient = isActive 
                 ? AVATAR_GRADIENTS[idx % AVATAR_GRADIENTS.length] 
                 : 'from-gray-300 to-gray-400';
@@ -102,9 +105,16 @@ export default function MemberTable({
                         {getInitials(m.name)}
                       </div>
                       <div>
-                        <p className={`text-sm font-semibold leading-tight ${isActive ? 'text-gray-900' : 'text-gray-500 line-through'}`}>
-                          {m.name}
-                        </p>
+                        <div className="flex items-center gap-2">
+                          <p className={`text-sm font-semibold leading-tight ${isActive ? 'text-gray-900' : 'text-gray-500 line-through'}`}>
+                            {m.name}
+                          </p>
+                          {isOwner && (
+                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-700">
+                              المالك
+                            </span>
+                          )}
+                        </div>
                         <p className="text-xs text-gray-400 mt-0.5">{m.email}</p>
                       </div>
                     </div>
@@ -161,14 +171,16 @@ export default function MemberTable({
                       </button>
 
                       {/* Delete */}
-                      <button
-                        onClick={() => handleDelete(m)}
-                        title="Remove member"
-                        className="flex items-center justify-center gap-1 rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs font-semibold text-gray-600 transition-colors hover:border-transparent hover:bg-red-600 hover:text-white"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                        حذف
-                      </button>
+                      {!isOwner && (
+                        <button
+                          onClick={() => handleDelete(m)}
+                          title="Remove member"
+                          className="flex items-center justify-center gap-1 rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs font-semibold text-gray-600 transition-colors hover:border-transparent hover:bg-red-600 hover:text-white"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                          حذف
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>

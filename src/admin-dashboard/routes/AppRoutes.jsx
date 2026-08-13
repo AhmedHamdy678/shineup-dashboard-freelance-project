@@ -11,6 +11,7 @@ const DashboardPage = lazy(() => import("../features/dashboard/DashboardPage"));
 const ProvidersPage = lazy(() => import("../features/providers/ProvidersPage"));
 const ProviderReviewPage = lazy(() => import("../features/providers/ProviderReviewPage"));
 const CustomersPage = lazy(() => import("../features/customers/CustomersPage"));
+const CustomerDetailsPage = lazy(() => import("../features/customers/CustomerDetailsPage"));
 const BookingsPage = lazy(() => import("../features/bookings/BookingsPage"));
 const ReviewsPage = lazy(() => import("../features/reviews/ReviewsPage"));
 const ReviewDetailsPage = lazy(() => import("../features/reviews/ReviewDetailsPage"));
@@ -25,7 +26,10 @@ const ProviderPayoutMethodsPage = lazy(() => import("../features/finance/Provide
 const BankAccountDetailsPage = lazy(() => import("../features/finance/BankAccountDetailsPage"));
 const ProviderWithdrawalsPage = lazy(() => import("../features/finance/ProviderWithdrawalsPage"));
 const WithdrawalRequestDetailsPage = lazy(() => import("../features/finance/WithdrawalRequestDetailsPage"));
+const RefundRequestsPage = lazy(() => import("../features/refund-requests/RefundRequestsPage"));
+const CancellationRequestsPage = lazy(() => import("../features/cancellation-requests/CancellationRequestsPage"));
 const AdminNotificationsPage = lazy(() => import("../features/notifications/AdminNotificationsPage"));
+const PromotionsPage = lazy(() => import("../features/promotions/PromotionsPage"));
 
 const ProviderDashboardPage = lazy(() => import("../../owner-provider-dashboard/features/dashboard/DashboardOverviewPage"));
 const ProviderBookingsPage = lazy(() => import("../../owner-provider-dashboard/features/bookings/ProviderBookingsPage"));
@@ -33,12 +37,14 @@ const ProviderBookingDetailsPage = lazy(() => import("../../owner-provider-dashb
 const TeamPage = lazy(() => import("../../owner-provider-dashboard/features/team/TeamPage"));
 const TeamMemberAnalyticsPage = lazy(() => import("../../owner-provider-dashboard/features/team/TeamMemberAnalyticsPage"));
 const ProviderServicesPage = lazy(() => import("../../owner-provider-dashboard/features/services/ProviderServicesPage"));
+const ServiceZonesPage = lazy(() => import("../../owner-provider-dashboard/features/service-zones/ServiceZonesPage"));
 const ProviderReviewsPage = lazy(() => import("../../owner-provider-dashboard/features/reviews/ProviderReviewsPage"));
 const WalletPage = lazy(() => import("../../owner-provider-dashboard/features/wallet/WalletPage"));
 const ProviderProfilePage = lazy(() => import("../../owner-provider-dashboard/features/profile/ProviderProfilePage"));
 const ProviderSettingsPage = lazy(() => import("../../owner-provider-dashboard/features/settings/ProviderSettingsPage"));
 const ProviderChatPage = lazy(() => import("../../owner-provider-dashboard/features/chat/ProviderChatPage"));
 const ProviderNotificationsPage = lazy(() => import("../../owner-provider-dashboard/features/notifications/ProviderNotificationsPage"));
+const ProviderPromotionsPage = lazy(() => import("../../owner-provider-dashboard/features/promotions/ProviderPromotionsPage"));
 const ProviderLoginPage = lazy(() => import("../../owner-provider-dashboard/features/auth/ProviderLoginPage"));
 const ProviderRegisterPage = lazy(() => import("../../owner-provider-dashboard/features/auth/ProviderRegisterPage"));
 const ProviderOnboardingPage = lazy(() => import("../../owner-provider-dashboard/features/profile/ProviderOnboardingPage"));
@@ -72,6 +78,7 @@ export default function AppRoutes() {
           <Route path="providers/pending/:providerId" element={<SuspenseWrapper><ProviderReviewPage /></SuspenseWrapper>} />
           <Route path="providers/:providerId" element={<SuspenseWrapper><ProviderReviewPage /></SuspenseWrapper>} />
           <Route path="customers" element={<SuspenseWrapper><CustomersPage /></SuspenseWrapper>} />
+          <Route path="customers/:customerId" element={<SuspenseWrapper><CustomerDetailsPage /></SuspenseWrapper>} />
           <Route path="bookings" element={<SuspenseWrapper><BookingsPage /></SuspenseWrapper>} />
           <Route path="reviews" element={<SuspenseWrapper><ReviewsPage /></SuspenseWrapper>} />
           <Route path="reviews/:id" element={<SuspenseWrapper><ReviewDetailsPage /></SuspenseWrapper>} />
@@ -86,6 +93,9 @@ export default function AppRoutes() {
           <Route path="provider-payout-methods/:id" element={<SuspenseWrapper><BankAccountDetailsPage /></SuspenseWrapper>} />
           <Route path="provider-withdrawals" element={<SuspenseWrapper><ProviderWithdrawalsPage /></SuspenseWrapper>} />
           <Route path="provider-withdrawals/:id" element={<SuspenseWrapper><WithdrawalRequestDetailsPage /></SuspenseWrapper>} />
+          <Route path="refund-requests" element={<SuspenseWrapper><RefundRequestsPage /></SuspenseWrapper>} />
+          <Route path="cancellation-requests" element={<SuspenseWrapper><CancellationRequestsPage /></SuspenseWrapper>} />
+          <Route path="promotions" element={<SuspenseWrapper><PromotionsPage /></SuspenseWrapper>} />
           <Route path="notifications" element={<SuspenseWrapper><AdminNotificationsPage /></SuspenseWrapper>} />
         </Route>
       </Route>
@@ -101,9 +111,11 @@ export default function AppRoutes() {
           <Route path="/provider/team" element={<SuspenseWrapper><TeamPage /></SuspenseWrapper>} />
           <Route path="/provider/team/:memberId" element={<SuspenseWrapper><TeamMemberAnalyticsPage /></SuspenseWrapper>} />
           <Route path="/provider/services" element={<SuspenseWrapper><ProviderServicesPage /></SuspenseWrapper>} />
+          <Route path="/provider/service-zones" element={<SuspenseWrapper><ServiceZonesPage /></SuspenseWrapper>} />
           <Route path="/provider/chat" element={<SuspenseWrapper><ProviderChatPage /></SuspenseWrapper>} />
           <Route path="/provider/notifications" element={<SuspenseWrapper><ProviderNotificationsPage /></SuspenseWrapper>} />
           <Route path="/provider/reviews" element={<SuspenseWrapper><ProviderReviewsPage /></SuspenseWrapper>} />
+          <Route path="/provider/promotions" element={<SuspenseWrapper><ProviderPromotionsPage /></SuspenseWrapper>} />
           <Route path="/provider/wallet" element={<SuspenseWrapper><WalletPage /></SuspenseWrapper>} />
           <Route path="/provider/profile" element={<SuspenseWrapper><ProviderProfilePage /></SuspenseWrapper>} />
           <Route path="/provider/settings" element={<SuspenseWrapper><ProviderSettingsPage /></SuspenseWrapper>} />
