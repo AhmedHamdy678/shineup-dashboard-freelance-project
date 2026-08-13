@@ -6,6 +6,7 @@ import { useAdminProviderDetails } from './useProviders';
 import { approveProvider, rejectProvider } from '../../api/endpoints/providers.api';
 import axiosClient from '../../api/axiosClient';
 import toast from 'react-hot-toast';
+import ProviderMembersList from './ProviderMembersList';
 
 const statusMap = {
   APPROVED: { text: 'مقبول', bg: 'bg-green-100 text-green-700' },
@@ -66,38 +67,30 @@ export default function ProviderReviewPage() {
 
   const [isDownloading, setIsDownloading] = useState(false);
 
-  const handleDownload = async (url, mimeType) => {
-    if (!url) return;
-    if (url.startsWith('http')) {
-      window.open(url, '_blank');
+  const handleDownloadDocument = async (mediaId, fileName) => {
+    if (!mediaId) {
+      toast.error('معرف المستند غير متوفر.');
       return;
     }
     
     try {
       setIsDownloading(true);
-      // Ensure the url starts with a slash
-      const targetUrl = url.startsWith('/') ? url : `/${url}`;
+      const response = await axiosClient.get(`/admin/providers/${targetId}/verification-documents/${mediaId}`, { 
+        responseType: 'blob' 
+      });
       
-      const response = await axiosClient.get(targetUrl, { responseType: 'blob' });
-      
-      // Determine file extension from mimeType
-      const extension = mimeType ? mimeType.split('/')[1] : 'pdf';
-      const filename = `verification-document-${targetId}.${extension}`;
-      
-      const blobUrl = window.URL.createObjectURL(new Blob([response.data]));
+      const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
-      link.href = blobUrl;
-      link.setAttribute('download', filename);
+      link.href = url;
+      link.setAttribute('download', fileName || `verification-document-${targetId}`);
       document.body.appendChild(link);
       link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(blobUrl);
+      link.remove();
     } catch (error) {
       console.error('Download Error:', error);
       toast.error('حدث خطأ أثناء تحميل المستند. تأكد من صلاحياتك أو صحة المسار.');
     } finally {
-      setIsDownloading(true);
-      setTimeout(() => setIsDownloading(false), 500);
+      setIsDownloading(false);
     }
   };
 
@@ -310,23 +303,27 @@ export default function ProviderReviewPage() {
               <div className="pt-5 border-t border-gray-100">
                 <p className="text-sm font-medium text-gray-900 mb-3">مستند التوثيق المرفق</p>
                 <button
-                  onClick={() => handleDownload(
-                    provider.files.verificationDocument.downloadUrl || provider.files.verificationDocument.url,
-                    provider.files.verificationDocument.mimeType
+                  onClick={() => handleDownloadDocument(
+                    provider.files.verificationDocument.mediaId || provider.files.verificationDocument.id,
+                    provider.files.verificationDocument.fileName || provider.files.verificationDocument.name
                   )}
                   disabled={isDownloading}
                   className="w-full flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition group disabled:opacity-75 disabled:cursor-wait"
                 >
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-blue-50 rounded-md text-blue-600">
-                      <FileText size={20} />
+                      {isDownloading ? (
+                        <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                      ) : (
+                        <FileText size={20} />
+                      )}
                     </div>
                     <div className="text-right">
                       <p className="text-sm font-medium text-gray-900 group-hover:text-blue-600 transition">
-                        {isDownloading ? 'جاري التحميل...' : 'عرض المستند'}
+                        {isDownloading ? 'جاري التحميل...' : 'تحميل المستند'}
                       </p>
-                      {provider.files.verificationDocument.mimeType && (
-                        <p className="text-xs text-gray-500 uppercase">{provider.files.verificationDocument.mimeType.split('/')[1] || 'FILE'}</p>
+                      {provider.files.verificationDocument.fileName && (
+                        <p className="text-xs text-gray-500 truncate max-w-[200px]" dir="ltr">{provider.files.verificationDocument.fileName}</p>
                       )}
                     </div>
                   </div>
@@ -337,6 +334,8 @@ export default function ProviderReviewPage() {
           </div>
         </div>
       </div>
+
+      <ProviderMembersList providerId={targetId} />
 
       {/* Reject Modal */}
       {isRejectModalOpen && (

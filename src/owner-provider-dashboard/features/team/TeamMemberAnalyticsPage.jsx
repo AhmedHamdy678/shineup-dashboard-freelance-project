@@ -2,7 +2,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useMemberAnalytics } from "./useTeam";
 import { ArrowRight, Clock, Calendar, CheckCircle, XCircle, Briefcase, Activity } from "lucide-react";
 import Card from "../../../shared/components/ui/Card";
-
+import MemberWorkSchedule from "./MemberWorkSchedule";
+import MemberEffectiveZones from "./MemberEffectiveZones";
 export default function TeamMemberAnalyticsPage() {
   const { memberId } = useParams();
   const navigate = useNavigate();
@@ -158,6 +159,9 @@ export default function TeamMemberAnalyticsPage() {
           </div>
         </div>
       </div>
+
+      <MemberWorkSchedule memberId={memberId} />
+      <MemberEffectiveZones memberId={memberId} />
 
       {/* Lists (Empty States) */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

@@ -15,6 +15,7 @@ export async function getMembers() {
   const { data } = await providerAxiosClient.get('/providers/me/members');
   return (data.items || []).map((item) => ({
     id: item.id,
+    userId: item.userId,
     name: item.displayName,
     email: item.user?.email || '',
     phone: item.user?.phone || '',

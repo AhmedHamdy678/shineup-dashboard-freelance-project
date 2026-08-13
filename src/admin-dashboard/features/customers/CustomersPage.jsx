@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { MoreHorizontal, Users, UserCheck, Calendar, CheckCircle } from 'lucide-react';
 import { useCustomers } from './useCustomers';
 import StatCard from '../../../shared/components/ui/StatCard';
@@ -49,6 +50,7 @@ function formatDate(dateStr) {
 export default function CustomersPage() {
   const [page, setPage] = useState(1);
   const [openDropdownId, setOpenDropdownId] = useState(null);
+  const navigate = useNavigate();
   const limit = 20;
 
   const { data, isLoading, isError } = useCustomers(page, limit);
@@ -187,7 +189,7 @@ export default function CustomersPage() {
                               onClick={(e) => {
                                 e.stopPropagation();
                                 setOpenDropdownId(null);
-                                console.log('View', customer.id);
+                                navigate(`/admin/customers/${customer.id}`);
                               }}
                               className="w-full text-start px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors"
                             >

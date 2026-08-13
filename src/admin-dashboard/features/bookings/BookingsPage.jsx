@@ -3,7 +3,6 @@ import { getBookings } from '../../api/endpoints/bookings.api';
 import Table from '../../../shared/components/ui/Table';
 import Pagination from '../../../shared/components/ui/Pagination';
 import Badge from '../../../shared/components/ui/Badge';
-import formatCurrency from '../../../shared/utils/formatCurrency';
 import formatDate from '../../../shared/utils/formatDate';
 import { useState } from 'react';
 
@@ -14,6 +13,21 @@ const statusVariant = {
   COMPLETED: 'success',
   CANCELLED: 'danger',
   EXPIRED: 'default',
+  PAYMENT_EXPIRED: 'warning',
+  CANCELLED_BY_CUSTOMER: 'danger',
+  CANCELLED_BY_PROVIDER: 'danger',
+};
+
+const statusTranslations = {
+  PENDING: 'قيد الانتظار',
+  CONFIRMED: 'مؤكد',
+  IN_PROGRESS: 'قيد التنفيذ',
+  COMPLETED: 'مكتمل',
+  CANCELLED: 'ملغي',
+  EXPIRED: 'منتهي',
+  PAYMENT_EXPIRED: 'انتهت صلاحية الدفع',
+  CANCELLED_BY_CUSTOMER: 'أُلغي من قبل العميل',
+  CANCELLED_BY_PROVIDER: 'أُلغي من قبل المزود',
 };
 
 export default function BookingsPage() {
@@ -75,12 +89,12 @@ export default function BookingsPage() {
     {
       key: 'status',
       label: 'الحالة',
-      render: (val) => <Badge variant={statusVariant[val] || 'default'}>{val}</Badge>,
+      render: (val) => <Badge variant={statusVariant[val] || 'default'}>{statusTranslations[val] || val}</Badge>,
     },
     {
       key: 'amount',
       label: 'المبلغ',
-      render: (val) => formatCurrency(val),
+      render: (val) => `${Number(val).toFixed(2)} ر.س`,
     },
     {
       key: 'createdAt',

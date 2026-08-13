@@ -41,8 +41,6 @@ export default function ProviderOnboardingPage() {
     if (data.addressStreet) formData.append('addressStreet', data.addressStreet);
     if (data.addressBuildingNumber) formData.append('addressBuildingNumber', data.addressBuildingNumber);
     if (data.addressNotes) formData.append('addressNotes', data.addressNotes);
-    if (data.addressLatitude) formData.append('addressLatitude', data.addressLatitude);
-    if (data.addressLongitude) formData.append('addressLongitude', data.addressLongitude);
 
     // Append files if they exist
     if (data.logo && data.logo[0]) {
@@ -227,31 +225,6 @@ export default function ProviderOnboardingPage() {
                 {errors.addressTitle && <p className="text-red-500 text-xs mt-1">{errors.addressTitle.message}</p>}
               </div>
 
-              {/* Latitude */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">خط العرض (Latitude)</label>
-                <input
-                  type="text"
-                  {...register('addressLatitude', { required: 'خط العرض مطلوب' })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition"
-                  placeholder="24.7136"
-                  dir="ltr"
-                />
-                {errors.addressLatitude && <p className="text-red-500 text-xs mt-1">{errors.addressLatitude.message}</p>}
-              </div>
-
-              {/* Longitude */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">خط الطول (Longitude)</label>
-                <input
-                  type="text"
-                  {...register('addressLongitude', { required: 'خط الطول مطلوب' })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition"
-                  placeholder="46.6753"
-                  dir="ltr"
-                />
-                {errors.addressLongitude && <p className="text-red-500 text-xs mt-1">{errors.addressLongitude.message}</p>}
-              </div>
 
               {/* Address Notes */}
               <div className="md:col-span-2">

@@ -8,7 +8,7 @@ export default defineConfig({
     open: true,
     proxy: {
       '/api': {
-        target: 'https://api.shineupapp.com',
+        target: 'https://api-dev.shineupapp.tech',
         changeOrigin: true,
         secure: false,
       },
