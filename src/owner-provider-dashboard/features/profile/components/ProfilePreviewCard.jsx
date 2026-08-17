@@ -8,15 +8,26 @@ export default function ProfilePreviewCard({ profile }) {
     coverUrl,
     logoUrl,
     nameBusiness,
-    fullName,
+    nameBusinessEn,
     approvalStatus,
     address,
-    description
+    description,
+    descriptionEn,
+    owner
   } = profile;
 
+  const sanitizeUrl = (url) => {
+    if (!url || typeof url !== 'string') return url;
+    if (url.includes('localhost')) {
+      const baseUrl = import.meta.env.VITE_SOCKET_URL || 'https://api-dev.shineupapp.tech';
+      return url.replace(/^https?:\/\/localhost(:\d+)?/, baseUrl);
+    }
+    return url;
+  };
+
   const locationString = address 
-    ? `${address.city || ''}, ${address.area || ''}`.replace(/^, | ,$/, '').trim() 
-    : 'Location not provided';
+    ? `${address.city || ''}، ${address.area || ''}`.replace(/^، | ،$/, '').trim() 
+    : 'لم يتم تحديد الموقع';
 
   const isApproved = approvalStatus === 'APPROVED';
 
@@ -25,7 +36,7 @@ export default function ProfilePreviewCard({ profile }) {
       {/* Cover Image */}
       <div className="h-32 w-full bg-gradient-to-r from-emerald-400 to-teal-500 relative">
           <img 
-            src={coverUrl} 
+            src={sanitizeUrl(coverUrl)} 
             alt="Cover" 
             crossOrigin="anonymous"
             className="w-full h-full object-cover" 
@@ -39,7 +50,7 @@ export default function ProfilePreviewCard({ profile }) {
         <div className="w-20 h-20 rounded-full border-4 border-white bg-white overflow-hidden shadow-sm flex items-center justify-center">
           {logoUrl ? (
             <img 
-              src={logoUrl} 
+              src={sanitizeUrl(logoUrl)} 
               alt="Logo" 
               crossOrigin="anonymous"
               className="w-full h-full object-cover" 
@@ -58,27 +69,39 @@ export default function ProfilePreviewCard({ profile }) {
       </div>
 
       <div className="pt-12 p-4">
-        <div className="flex items-center gap-2 mb-1">
-          <h2 className="text-xl font-bold text-gray-900">{nameBusiness || 'Business Name'}</h2>
+        <div className="flex items-start justify-between gap-2 mb-3">
+          <div className="flex flex-col items-start">
+            <h2 className="text-xl font-bold text-gray-900">{nameBusiness || 'الاسم التجاري'}</h2>
+            {nameBusinessEn && (
+              <h3 className="text-sm font-medium text-gray-500 mt-0.5 text-left" dir="ltr">{nameBusinessEn}</h3>
+            )}
+          </div>
           {approvalStatus && (
-            <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${isApproved ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
-              {isApproved ? 'Approved' : approvalStatus}
+            <span className={`px-2 py-0.5 text-xs font-medium rounded-full shrink-0 ${isApproved ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+              {isApproved ? 'مقبول' : approvalStatus}
             </span>
           )}
         </div>
-        {fullName && (
-          <div className="text-sm text-gray-500 mb-2">
-            Owner: {fullName}
-          </div>
-        )}
 
         <div className="flex items-center text-gray-500 text-sm mb-4">
-          <MapPin className="w-4 h-4 mr-1" />
-          {locationString || 'No location'}
+          <MapPin className="w-4 h-4 ml-1" />
+          {locationString || 'لا يوجد موقع'}
         </div>
 
-        <div className="text-gray-600 text-sm whitespace-pre-wrap">
-          {description || 'No description provided.'}
+        <div className="flex flex-col items-center text-center gap-2 mt-4 w-full">
+          <div className="text-gray-600 text-sm whitespace-pre-wrap">
+            {description || 'لم يتم تقديم وصف.'}
+          </div>
+          {descriptionEn && (
+            <div className="text-gray-600 text-sm whitespace-pre-wrap border-t border-gray-100 pt-3 mt-1 w-full" dir="ltr">
+              {descriptionEn}
+            </div>
+          )}
+        </div>
+
+        <div className="w-full mt-4 pt-4 border-t border-gray-100 flex items-center justify-center gap-2">
+          <span className="text-sm font-medium text-gray-500">المالك:</span>
+          <span className="text-sm font-bold text-gray-900">{owner?.fullName || "غير محدد"}</span>
         </div>
       </div>
     </div>
