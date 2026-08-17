@@ -4,146 +4,262 @@ import Card from '../../../../shared/components/ui/Card';
 import providerAxiosClient from '../../../api/providerAxiosClient';
 import toast from 'react-hot-toast';
 
-export default function ProfileForm({ profile, register, setValue, watch, errors }) {
+export function ProfileContactLocation({ profile, register, isEditMode }) {
+  return (
+    <Card>
+      <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+        <MapPin className="w-4 h-4 text-emerald-600" />
+        معلومات التواصل والموقع
+      </h3>
+      
+      {isEditMode ? (
+        <>
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">اسم المالك / Owner Name</label>
+            <input
+              type="text"
+              placeholder="اسم المالك"
+              {...register('fullName')}
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">رقم الجوال</label>
+              <div className="w-full px-3 py-2 border border-gray-100 bg-gray-50 text-gray-500 rounded-lg text-sm cursor-not-allowed flex items-center justify-between" dir="ltr">
+                <span className="truncate">{profile?.owner?.phone || profile?.phone || '---'}</span>
+                <span className="text-[10px] text-gray-400 font-medium shrink-0 bg-gray-200 px-1.5 py-0.5 rounded">غير قابل للتعديل</span>
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">البريد الإلكتروني</label>
+              <input
+                type="email"
+                placeholder="البريد الإلكتروني"
+                {...register('owner.email')}
+                dir="ltr"
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              />
+            </div>
+          </div>
+
+          <h4 className="text-sm font-medium text-gray-700 mb-3">تفاصيل العنوان</h4>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-500 mb-1 text-xs">المدينة</label>
+              <input
+                type="text"
+                placeholder="المدينة"
+                {...register('address.city')}
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-500 mb-1 text-xs">المنطقة</label>
+              <input
+                type="text"
+                placeholder="المنطقة"
+                {...register('address.area')}
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-500 mb-1 text-xs">الشارع</label>
+              <input
+                type="text"
+                placeholder="الشارع"
+                {...register('address.street')}
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-500 mb-1 text-xs">رقم المبنى</label>
+              <input
+                type="text"
+                placeholder="رقم المبنى"
+                {...register('address.buildingNumber')}
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              />
+            </div>
+          </div>
+        </>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-8 mt-4">
+          <div className="flex flex-col items-start gap-1 w-full text-right">
+            <span className="text-sm font-medium text-gray-500">اسم المالك</span>
+            <span className="text-base font-semibold text-gray-900">{profile?.owner?.fullName || profile?.fullName || '---'}</span>
+          </div>
+          <div className="flex flex-col items-start gap-1 w-full text-right">
+            <span className="text-sm font-medium text-gray-500">رقم الجوال</span>
+            <span className="text-base font-semibold text-gray-900 text-left w-auto max-w-full" dir="ltr">{profile?.owner?.phone || profile?.phone || '---'}</span>
+          </div>
+          <div className="flex flex-col items-start gap-1 w-full text-right">
+            <span className="text-sm font-medium text-gray-500">البريد الإلكتروني</span>
+            <span className="text-base font-semibold text-gray-900 text-left w-auto max-w-full" dir="ltr">{profile?.owner?.email || profile?.email || '---'}</span>
+          </div>
+          <div className="flex flex-col items-start gap-1 w-full text-right">
+            <span className="text-sm font-medium text-gray-500">المدينة</span>
+            <span className="text-base font-semibold text-gray-900">{profile?.address?.city || '---'}</span>
+          </div>
+          <div className="flex flex-col items-start gap-1 w-full text-right">
+            <span className="text-sm font-medium text-gray-500">المنطقة</span>
+            <span className="text-base font-semibold text-gray-900">{profile?.address?.area || '---'}</span>
+          </div>
+          <div className="flex flex-col items-start gap-1 w-full text-right">
+            <span className="text-sm font-medium text-gray-500">الشارع</span>
+            <span className="text-base font-semibold text-gray-900">{profile?.address?.street || '---'}</span>
+          </div>
+          <div className="flex flex-col items-start gap-1 w-full text-right">
+            <span className="text-sm font-medium text-gray-500">رقم المبنى</span>
+            <span className="text-base font-semibold text-gray-900">{profile?.address?.buildingNumber || '---'}</span>
+          </div>
+        </div>
+      )}
+    </Card>
+  );
+}
+
+export default function ProfileForm({ profile, register, setValue, watch, errors, isEditMode }) {
   return (
     <div className="space-y-6">
       {/* BASIC INFO */}
       <Card>
         <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
           <Building2 className="w-4 h-4 text-emerald-600" />
-          BASIC INFO
+          المعلومات الأساسية
         </h3>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Business Name</label>
-            <input
-              type="text"
-              {...register('nameBusiness', { required: 'Business name is required' })}
-              className={`w-full px-3 py-2 border ${errors.nameBusiness ? 'border-red-500' : 'border-gray-200'} rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500`}
-            />
-            {errors.nameBusiness && <p className="text-red-500 text-xs mt-1">{errors.nameBusiness.message}</p>}
+        {isEditMode ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">الاسم التجاري</label>
+              <input
+                type="text"
+                placeholder="الاسم التجاري"
+                {...register('nameBusinessAr', { required: 'الاسم التجاري مطلوب' })}
+                className={`w-full px-3 py-2 border ${errors.nameBusinessAr ? 'border-red-500' : 'border-gray-200'} rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500`}
+              />
+              {errors.nameBusinessAr && <p className="text-red-500 text-xs mt-1">{errors.nameBusinessAr.message}</p>}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">الاسم التجاري (إنجليزي) / Business Name (EN)</label>
+              <input
+                type="text"
+                placeholder="Business Name"
+                {...register('nameBusinessEn')}
+                dir="ltr"
+                className={`w-full px-3 py-2 border ${errors.nameBusinessEn ? 'border-red-500' : 'border-gray-200'} rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500`}
+              />
+              {errors.nameBusinessEn && <p className="text-red-500 text-xs mt-1">{errors.nameBusinessEn.message}</p>}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">السجل التجاري</label>
+              <input
+                type="text"
+                placeholder="رقم السجل التجاري"
+                {...register('registerCommercial')}
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              />
+            </div>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Commercial Register</label>
-            <input
-              type="text"
-              {...register('registerCommercial')}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-            />
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-8 mb-6 mt-4">
+            <div className="flex flex-col items-start gap-1 w-full text-right">
+              <span className="text-sm font-medium text-gray-500">الاسم التجاري</span>
+              <div className="flex flex-col items-start gap-1 w-full text-right">
+                <span className="text-base font-semibold text-gray-900 block">{profile?.nameBusinessAr || profile?.nameBusiness || '---'}</span>
+                {profile?.nameBusinessEn && (
+                  <span className="text-sm text-gray-500 block text-left w-auto max-w-full" dir="ltr">{profile.nameBusinessEn}</span>
+                )}
+              </div>
+            </div>
+            <div className="flex flex-col items-start gap-1 w-full text-right">
+              <span className="text-sm font-medium text-gray-500">السجل التجاري</span>
+              <span className="text-base font-semibold text-gray-900">{profile?.registerCommercial || '---'}</span>
+            </div>
           </div>
-        </div>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <FileUploadZone 
-            label="Logo" 
+            label="الشعار" 
             name="logoFile" 
             existingUrl={profile?.logoUrl}
             register={register} 
             watch={watch}
             setValue={setValue}
+            isEditMode={isEditMode}
           />
           <FileUploadZone 
-            label="Cover Photo" 
+            label="صورة الغلاف" 
             name="coverFile" 
             existingUrl={profile?.coverUrl}
             register={register} 
             watch={watch}
             setValue={setValue}
+            isEditMode={isEditMode}
           />
           <FileUploadZone 
-            label="Verification Document" 
+            label="مستند التوثيق" 
             name="verificationDocument" 
             existingUrl={profile?.verificationDocument}
             register={register} 
             watch={watch}
             setValue={setValue}
+            isEditMode={false} // Force read-only
           />
         </div>
       </Card>
 
       {/* BUSINESS DESCRIPTION */}
       <Card>
-        <h3 className="font-semibold text-gray-900 mb-4">BUSINESS DESCRIPTION</h3>
+        <h3 className="font-semibold text-gray-900 mb-4">وصف النشاط التجاري</h3>
         <div>
-          <textarea
-            {...register('description')}
-            rows={4}
-            placeholder="Tell us about your business..."
-            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-          />
+          {isEditMode ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">وصف النشاط (عربي)</label>
+                <textarea
+                  {...register('descriptionAr')}
+                  rows={4}
+                  placeholder="حدثنا عن نشاطك التجاري..."
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Business Description (EN)</label>
+                <textarea
+                  {...register('descriptionEn')}
+                  rows={4}
+                  dir="ltr"
+                  placeholder="Tell us about your business..."
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                />
+              </div>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-4 mt-4">
+              <div className="flex flex-col items-start gap-1 w-full text-right">
+                <span className="text-sm font-medium text-gray-500">الوصف (عربي)</span>
+                <span className="text-base font-semibold text-gray-900 whitespace-pre-wrap">{profile?.descriptionAr || profile?.description || '---'}</span>
+              </div>
+              <div className="flex flex-col items-start gap-1 w-full text-right">
+                <span className="text-sm text-gray-500">Description (EN)</span>
+                <span dir="ltr" className="text-base text-gray-900 text-left w-auto max-w-full whitespace-pre-wrap">
+                  {profile?.descriptionEn || '---'}
+                </span>
+              </div>
+            </div>
+          )}
         </div>
       </Card>
 
-      {/* CONTACT & LOCATION */}
-      <Card>
-        <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-          <MapPin className="w-4 h-4 text-emerald-600" />
-          CONTACT & LOCATION
-        </h3>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Phone</label>
-            <input
-              type="tel"
-              {...register('phone')}
-              dir="ltr"
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
-            <input
-              type="email"
-              {...register('email')}
-              dir="ltr"
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-            />
-          </div>
-        </div>
 
-        <h4 className="text-sm font-medium text-gray-700 mb-3">Address Details</h4>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <input
-              type="text"
-              placeholder="City"
-              {...register('address.city')}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-            />
-          </div>
-          <div>
-            <input
-              type="text"
-              placeholder="Area"
-              {...register('address.area')}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-            />
-          </div>
-          <div>
-            <input
-              type="text"
-              placeholder="Street"
-              {...register('address.street')}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-            />
-          </div>
-          <div>
-            <input
-              type="text"
-              placeholder="Building Number"
-              {...register('address.buildingNumber')}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-            />
-          </div>
-        </div>
-      </Card>
     </div>
   );
 }
 
-function FileUploadZone({ label, name, existingUrl, register, watch, setValue }) {
+function FileUploadZone({ label, name, existingUrl, register, watch, setValue, isEditMode }) {
   const fileList = watch(name);
   const file = fileList && fileList.length > 0 ? fileList[0] : null;
   const [previewUrl, setPreviewUrl] = useState(null);
@@ -161,7 +277,12 @@ function FileUploadZone({ label, name, existingUrl, register, watch, setValue })
 
   useEffect(() => {
     if (!file && existingUrl) {
-      const urlStr = typeof existingUrl === 'string' ? existingUrl : (existingUrl?.downloadUrl || existingUrl?.url || existingUrl?.path || (existingUrl?.mediaId ? `/media/${existingUrl.mediaId}` : ''));
+      let urlStr = typeof existingUrl === 'string' ? existingUrl : (existingUrl?.downloadUrl || existingUrl?.url || existingUrl?.path || (existingUrl?.mediaId ? `/media/${existingUrl.mediaId}` : ''));
+      
+      if (urlStr && urlStr.includes('localhost')) {
+        const baseUrl = import.meta.env.VITE_SOCKET_URL || 'https://api-dev.shineupapp.tech';
+        urlStr = urlStr.replace(/^https?:\/\/localhost(:\d+)?/, baseUrl);
+      }
       const isImage = name === 'logoFile' || name === 'coverFile' || (urlStr && urlStr.match(/\.(jpeg|jpg|gif|png|webp)$/i));
       
       if (isImage && urlStr) {
@@ -228,7 +349,7 @@ function FileUploadZone({ label, name, existingUrl, register, watch, setValue })
           className="mt-3 text-xs font-medium text-emerald-700 bg-emerald-100 hover:bg-emerald-200 py-1.5 px-3 rounded-lg text-center flex items-center justify-center gap-1 transition-colors"
         >
           <ExternalLink className="w-3 h-3" />
-          Preview
+          معاينة
         </a>
       </div>
     );
@@ -236,9 +357,14 @@ function FileUploadZone({ label, name, existingUrl, register, watch, setValue })
 
   // State 2: Existing File Preview (Server Image)
   if (!file && existingUrl) {
-    const urlStr = typeof existingUrl === 'string' 
+    let urlStr = typeof existingUrl === 'string' 
       ? existingUrl 
       : (existingUrl?.downloadUrl || existingUrl?.url || existingUrl?.path || (existingUrl?.mediaId ? `/media/${existingUrl.mediaId}` : ''));
+      
+    if (urlStr && urlStr.includes('localhost')) {
+      const baseUrl = import.meta.env.VITE_SOCKET_URL || 'https://api-dev.shineupapp.tech';
+      urlStr = urlStr.replace(/^https?:\/\/localhost(:\d+)?/, baseUrl);
+    }
       
     const isImage = name === 'logoFile' || name === 'coverFile' || (urlStr && urlStr.match(/\.(jpeg|jpg|gif|png|webp)$/i));
 
@@ -319,16 +445,28 @@ function FileUploadZone({ label, name, existingUrl, register, watch, setValue })
           >
             عرض
           </button>
-          <label className="flex-1 text-xs text-center py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-md cursor-pointer transition-colors">
-            تغيير
-            <input type="file" {...register(name)} className="hidden" accept="image/*,.pdf" />
-          </label>
+          {isEditMode && (
+            <label className="flex-1 text-xs text-center py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-md cursor-pointer transition-colors">
+              تغيير
+              <input type="file" {...register(name)} className="hidden" accept="image/*,.pdf" />
+            </label>
+          )}
         </div>
       </div>
     );
   }
 
   // State 3: Empty Default Upload UI
+  if (!isEditMode) {
+    return (
+      <div className="flex flex-col gap-2 h-full">
+        <div className="border border-gray-200 bg-gray-50 rounded-xl p-4 flex flex-col items-center justify-center text-center flex-1 min-h-[120px]">
+          <p className="text-sm font-medium text-gray-500">لا يوجد {label}</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-2 h-full">
       <div className="border-2 border-dashed border-gray-200 rounded-xl p-4 flex flex-col items-center justify-center text-center hover:border-emerald-500 transition-colors relative cursor-pointer group flex-1 min-h-[120px]">

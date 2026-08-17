@@ -27,7 +27,7 @@ export default function ProviderOnboardingPage() {
     const formData = new FormData();
     
     // Append text fields
-    formData.append('typeProvider', data.typeProvider);
+    formData.append('typeProvider', 'COMPANY');
     formData.append('nameBusinessAr', data.nameBusinessAr);
     formData.append('nameBusinessEn', data.nameBusinessEn);
     formData.append('registerCommercial', data.registerCommercial);
@@ -113,22 +113,8 @@ export default function ProviderOnboardingPage() {
                 {errors.nameBusinessEn && <p className="text-red-500 text-xs mt-1">{errors.nameBusinessEn.message}</p>}
               </div>
 
-              {/* Provider Type */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">نوع الحساب</label>
-                <select
-                  {...register('typeProvider', { required: 'نوع الحساب مطلوب' })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition bg-white"
-                >
-                  <option value="">اختر نوع الحساب...</option>
-                  <option value="COMPANY">شركة / مؤسسة</option>
-                  <option value="INDIVIDUAL">فرد / مستقل</option>
-                </select>
-                {errors.typeProvider && <p className="text-red-500 text-xs mt-1">{errors.typeProvider.message}</p>}
-              </div>
-
               {/* Commercial Registration */}
-              <div>
+              <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">السجل التجاري</label>
                 <input
                   type="text"

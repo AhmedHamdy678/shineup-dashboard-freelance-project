@@ -65,7 +65,7 @@ export default function AdminSupportThread({ selectedConversation, onConversatio
 
   const messages = messagesData || [];
 
-  // Scroll to bottom on new messagesلهف
+  // Scroll to bottom on new messages
   useEffect(() => {
     const timer = setTimeout(() => {
       if (messagesEndRef.current) {
