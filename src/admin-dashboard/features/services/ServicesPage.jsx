@@ -102,7 +102,7 @@ export default function ServicesPage() {
             <p className="text-gray-500 font-medium">لم يتم العثور على أي خدمات.</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="w-full overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-100 text-sm text-gray-600">

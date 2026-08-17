@@ -120,7 +120,7 @@ export default function ProviderReviewsPage() {
           <h2 className="text-lg font-semibold text-gray-900">سجل التقييمات</h2>
         </div>
 
-        <div className="overflow-x-auto">
+        <div className="w-full overflow-x-auto">
           <table className="w-full text-sm text-center">
             <thead>
               <tr className="bg-gray-50 border-b border-gray-100 text-gray-500 font-medium">

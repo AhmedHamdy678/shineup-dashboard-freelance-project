@@ -7,7 +7,7 @@ export default function InvoiceTable({ items }) {
       <div className="p-6 border-b border-gray-100">
         <h3 className="text-lg font-bold text-gray-900">الخدمات المطلوبة والفاتورة</h3>
       </div>
-      <div className="overflow-x-auto">
+      <div className="w-full overflow-x-auto">
         <table className="w-full text-sm text-right">
           <thead className="bg-gray-50 text-gray-500 border-b border-gray-100">
             <tr>

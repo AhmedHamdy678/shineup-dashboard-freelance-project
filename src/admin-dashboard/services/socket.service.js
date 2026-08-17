@@ -1,7 +1,9 @@
 import { io } from 'socket.io-client';
 
 // Prefer the configured API origin; same-origin is a safe fallback for the Nginx Socket.IO proxy.
-const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || window.location.origin;
+const SOCKET_URL = import.meta.env.DEV 
+  ? window.location.origin 
+  : (import.meta.env.VITE_SOCKET_URL || window.location.origin);
 
 const socket = io(SOCKET_URL, {
   autoConnect: false,

@@ -308,7 +308,7 @@ export default function WalletPage() {
               <p className="text-gray-500 text-lg">لا يوجد سجل سحوبات حتى الآن</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
+            <div className="w-full overflow-x-auto">
               <table className="w-full text-sm text-right">
                 <thead className="text-xs text-gray-500 uppercase bg-gray-50 border-b border-gray-100">
                   <tr>

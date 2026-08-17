@@ -173,7 +173,7 @@ export default function CustomerDetails() {
           
           <div className="flex-1 p-0">
             {latestBookings && latestBookings.length > 0 ? (
-              <div className="overflow-x-auto">
+              <div className="w-full overflow-x-auto">
                 <table className="w-full text-sm text-right">
                   <thead className="bg-gray-50 text-gray-500 font-medium">
                     <tr>

@@ -517,7 +517,7 @@ export default function ProviderPromotionDetails({ promotionId, onBack }) {
             </div>
           ) : (
             <>
-              <div className="overflow-x-auto">
+              <div className="w-full overflow-x-auto">
                 <table className="w-full text-right text-sm">
                   <thead className="bg-gray-50 text-gray-600 border-b border-gray-100">
                     <tr>

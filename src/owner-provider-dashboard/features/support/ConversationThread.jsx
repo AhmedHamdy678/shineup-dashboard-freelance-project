@@ -75,7 +75,7 @@ export default function ConversationThread({ selectedConversationId, onBack, cur
   useEffect(() => {
     if (selectedConversationId) {
       axiosClient.post(`/conversations/${selectedConversationId}/read`).then(() => {
-        queryClient.invalidateQueries(['provider-support-conversations']);
+        queryClient.invalidateQueries({ queryKey: ['provider-support-conversations'] });
       }).catch(console.error);
     }
   }, [selectedConversationId, messages.length, queryClient]);
@@ -91,8 +91,8 @@ export default function ConversationThread({ selectedConversationId, onBack, cur
     },
     onSuccess: () => {
       setInputText('');
-      queryClient.invalidateQueries(['provider-messages', selectedConversationId]);
-      queryClient.invalidateQueries(['provider-support-conversations']);
+      queryClient.invalidateQueries({ queryKey: ['provider-messages', selectedConversationId] });
+      queryClient.invalidateQueries({ queryKey: ['provider-support-conversations'] });
     }
   });
 
@@ -109,8 +109,8 @@ export default function ConversationThread({ selectedConversationId, onBack, cur
       return res.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['provider-conversation-details', selectedConversationId]);
-      queryClient.invalidateQueries(['provider-support-conversations']);
+      queryClient.invalidateQueries({ queryKey: ['provider-conversation-details', selectedConversationId] });
+      queryClient.invalidateQueries({ queryKey: ['provider-support-conversations'] });
     }
   });
 
