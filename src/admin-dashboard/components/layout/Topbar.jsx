@@ -4,10 +4,11 @@
  */
 import { useLocation, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import { Menu } from 'lucide-react';
 import axiosClient from '../../api/axiosClient';
 import { generalNav, settingsNav } from '../../constants/navigation';
 
-export default function Topbar() {
+export default function Topbar({ setIsMobileMenuOpen }) {
   const { pathname } = useLocation();
   const allNav = [...generalNav, ...settingsNav];
   const current = allNav.find((n) => n.path === pathname);
@@ -35,10 +36,18 @@ export default function Topbar() {
   const unreadCount = notificationsUnreadCount + supportUnreadCount;
 
   return (
-    <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6 sticky top-0 z-30">
-      <h2 className="text-xl font-semibold text-gray-800">
-        {current?.label || 'لوحة التحكم'}
-      </h2>
+    <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 lg:px-6 sticky top-0 z-30">
+      <div className="flex items-center gap-3">
+        <button
+          onClick={() => setIsMobileMenuOpen(true)}
+          className="lg:hidden p-2 -mr-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+        >
+          <Menu className="w-6 h-6" />
+        </button>
+        <h2 className="text-xl font-semibold text-gray-800">
+          {current?.label || 'لوحة التحكم'}
+        </h2>
+      </div>
       <div className="flex items-center gap-4">
         {/* Notification bell */}
         <Link to="/admin/notifications" className="relative text-gray-400 hover:text-gray-600 transition-colors block">

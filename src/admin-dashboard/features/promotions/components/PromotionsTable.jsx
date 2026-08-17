@@ -33,7 +33,7 @@ export default function PromotionsTable({ items, onViewDetails }) {
   };
 
   return (
-    <div className="overflow-x-auto">
+    <div className="w-full overflow-x-auto">
       <table className="w-full text-sm text-right text-gray-700">
         <thead className="text-xs text-gray-600 uppercase bg-gray-50 border-b border-gray-100">
           <tr>

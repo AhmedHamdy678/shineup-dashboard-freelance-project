@@ -3,14 +3,14 @@ import { LogOut } from 'lucide-react';
 import { providerMainNav, providerBusinessNav, providerSettingsNav } from '../../constants/providerNavigation';
 import useProviderAuthStore from '../../store/providerAuthStore';
 
-export default function ProviderSidebar() {
+export default function ProviderSidebar({ isMobileMenuOpen, setIsMobileMenuOpen }) {
   const { user, logout, profileStatus } = useProviderAuthStore();
   const isComplete = profileStatus !== 'INCOMPLETE';
   const isPending = profileStatus === 'PENDING_REVIEW' || profileStatus === 'PENDING';
   const isRejected = profileStatus === 'REJECTED';
 
   return (
-    <aside className="fixed top-0 ltr:left-0 rtl:right-0 h-screen w-60 bg-gray-900 text-white flex flex-col z-40">
+    <aside className={`fixed top-0 ltr:left-0 rtl:right-0 h-screen w-60 bg-gray-900 text-white flex flex-col z-50 transition-transform duration-300 ease-in-out lg:translate-x-0 lg:ltr:translate-x-0 lg:rtl:translate-x-0 ${isMobileMenuOpen ? 'translate-x-0' : 'ltr:-translate-x-full rtl:translate-x-full'}`}>
       <div className="h-16 flex items-center px-5 border-b border-gray-700">
         <h1 className="text-lg font-bold tracking-wide">مزود ShineUp</h1>
       </div>

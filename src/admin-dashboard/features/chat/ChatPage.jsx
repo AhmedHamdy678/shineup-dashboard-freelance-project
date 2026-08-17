@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useConversations } from './useConversations';
-import { useChatSocket } from './useChatSocket';
 import useChatStore from '../../store/chatStore';
 import { getMessageHistory } from '../../api/endpoints/chat.api';
 import ConversationList from './ConversationList';
@@ -9,8 +8,6 @@ import MessageThread from './MessageThread';
 import MessageInput from './MessageInput';
 
 export default function ChatPage() {
-  useChatSocket();
-
   const { data: conversations = [], isLoading } = useConversations();
 
   const activeId = useChatStore((s) => s.activeConversationId);

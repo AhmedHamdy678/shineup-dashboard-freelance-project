@@ -35,7 +35,7 @@ export default function ConversationInbox({ selectedConversationId, setSelectedC
     },
     onSuccess: (data) => {
       const newConv = data?.conversation || data?.data?.conversation || data;
-      queryClient.invalidateQueries(['provider-support-conversations']);
+      queryClient.invalidateQueries({ queryKey: ['provider-support-conversations'] });
       setIsModalOpen(false);
       setNewMessage('');
       if (newConv?.id) {

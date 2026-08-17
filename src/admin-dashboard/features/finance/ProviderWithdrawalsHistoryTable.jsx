@@ -49,7 +49,7 @@ export default function ProviderWithdrawalsHistoryTable({ providerId }) {
           لا توجد سجلات سحب سابقة لهذا المزود
         </div>
       ) : (
-        <div className="overflow-x-auto">
+        <div className="w-full overflow-x-auto">
           <table className="w-full text-sm text-right text-gray-500">
             <thead className="text-xs text-gray-700 bg-gray-50">
               <tr>

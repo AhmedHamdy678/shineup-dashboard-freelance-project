@@ -46,7 +46,7 @@ const RefundRequestsTable = ({ items, onViewDetails }) => {
   };
 
   return (
-    <div className="overflow-x-auto">
+    <div className="w-full overflow-x-auto">
       <table className="w-full text-sm text-right">
         <thead className="text-xs text-gray-500 uppercase bg-gray-50 border-b border-gray-100">
           <tr>

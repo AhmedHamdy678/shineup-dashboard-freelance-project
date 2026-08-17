@@ -488,7 +488,7 @@ export default function PromotionDetails({ promotionId, onBack, onEdit }) {
             </div>
           ) : (
             <>
-              <div className="overflow-x-auto">
+              <div className="w-full overflow-x-auto">
                 <table className="w-full text-right">
                   <thead>
                     <tr className="bg-gray-50 border-b border-gray-100">

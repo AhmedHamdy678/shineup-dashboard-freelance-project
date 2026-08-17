@@ -4,15 +4,12 @@ import useChatStore from '../../../store/chatStore';
 import useAuthStore from '../../../store/authStore';
 import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getConversationDetails, getMessageHistory, sendMessage } from '../../../api/endpoints/chat.api';
-import { useChatSocket } from '../useChatSocket';
 import { Send, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import AdminSupportQueue from '../../support/components/AdminSupportQueue';
 import AdminSupportThread from '../../support/components/AdminSupportThread';
 
 export default function AdminChatPage() {
-  useChatSocket();
-
   const activeId = useChatStore((s) => s.activeConversationId);
   const setActiveConversation = useChatStore((s) => s.setActiveConversation);
   const user = useAuthStore((s) => s.user);
@@ -139,7 +136,7 @@ export default function AdminChatPage() {
         {activeTab === 'PROVIDER' ? (
           <AdminSupportThread 
             selectedConversation={selectedSupportConversation} 
-            onConversationUpdated={() => queryClient.invalidateQueries(['admin-support-conversations'])} 
+            onConversationUpdated={() => queryClient.invalidateQueries({ queryKey: ['admin-support-conversations'] })} 
           />
         ) : activeId ? (
           <>

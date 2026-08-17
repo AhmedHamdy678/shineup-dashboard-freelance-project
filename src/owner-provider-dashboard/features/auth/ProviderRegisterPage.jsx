@@ -35,13 +35,20 @@ export default function ProviderRegisterPage() {
   const [otpCode, setOtpCode] = useState('');
 
   useEffect(() => {
-    if (step === 2 && timer > 0) {
-      const interval = setInterval(() => {
-        setTimer((prev) => prev - 1);
-      }, 1000);
-      return () => clearInterval(interval);
-    }
-  }, [step, timer]);
+    if (step !== 2) return;
+    
+    const interval = setInterval(() => {
+      setTimer((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    
+    return () => clearInterval(interval);
+  }, [step]);
 
   const onRegister = (data) => {
     const { confirmPassword, ...payload } = data;

@@ -80,7 +80,7 @@ export default function AdminSupportThread({ selectedConversation, onConversatio
     if (conversationId && !isUnassigned) {
       axiosClient.post(`/conversations/${conversationId}/read`)
         .then(() => {
-          queryClient.invalidateQueries(['admin-support-conversations']);
+          queryClient.invalidateQueries({ queryKey: ['admin-support-conversations'] });
         })
         .catch(err => console.error("Failed to mark as read", err));
     }
@@ -118,8 +118,8 @@ export default function AdminSupportThread({ selectedConversation, onConversatio
     },
     onSuccess: () => {
       setInputText('');
-      queryClient.invalidateQueries(['admin-messages', conversationId]);
-      queryClient.invalidateQueries(['admin-support-conversations']);
+      queryClient.invalidateQueries({ queryKey: ['admin-messages', conversationId] });
+      queryClient.invalidateQueries({ queryKey: ['admin-support-conversations'] });
     },
     onError: (error) => {
       toast.error(error.response?.data?.message || error.message || "فشل إرسال الرسالة");
@@ -136,8 +136,8 @@ export default function AdminSupportThread({ selectedConversation, onConversatio
       if (data?.resolvedNow || data?.supportStatus === 'RESOLVED') {
         toast.success("تم حل المشكلة وإغلاق التذكرة بنجاح");
       }
-      queryClient.invalidateQueries(['admin-conversation-details', conversationId]);
-      queryClient.invalidateQueries(['admin-support-conversations']);
+      queryClient.invalidateQueries({ queryKey: ['admin-conversation-details', conversationId] });
+      queryClient.invalidateQueries({ queryKey: ['admin-support-conversations'] });
       if (onConversationUpdated) onConversationUpdated();
     },
     onError: (error) => {

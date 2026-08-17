@@ -73,7 +73,7 @@ export default function ReviewsPage() {
             لا توجد تقييمات حتى الآن.
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="w-full overflow-x-auto">
             <table className="w-full text-sm text-right">
               <thead className="bg-gray-50 text-gray-600 font-medium border-b border-gray-100">
                 <tr>

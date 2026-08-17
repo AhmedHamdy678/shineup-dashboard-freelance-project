@@ -35,7 +35,7 @@ export default function ProviderPromotionsTable({ items, onView }) {
   };
 
   return (
-    <div className="overflow-x-auto">
+    <div className="w-full overflow-x-auto">
       <table className="w-full text-right">
         <thead>
           <tr className="bg-gray-50 border-b border-gray-100">

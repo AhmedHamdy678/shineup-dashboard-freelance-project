@@ -9,12 +9,12 @@
  * - Avatar circle showing the first letter of the provider's name
  */
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Bell } from 'lucide-react';
+import { Bell, Menu } from 'lucide-react';
 import { providerAllNav } from '../../constants/providerNavigation';
 import useProviderAuthStore from '../../store/providerAuthStore';
 import { useProviderNotifications } from '../../features/notifications/useProviderNotifications';
 
-export default function ProviderTopbar() {
+export default function ProviderTopbar({ setIsMobileMenuOpen }) {
   const { pathname } = useLocation();
   const navigate = useNavigate();
 
@@ -28,11 +28,21 @@ export default function ProviderTopbar() {
     useProviderAuthStore.getState().user?.name?.charAt(0) || 'م';
 
   return (
-    <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6 sticky top-0 z-30">
-      {/* Page title */}
-      <h2 className="text-xl font-semibold text-gray-800">
-        {current?.label || 'لوحة التحكم'}
-      </h2>
+    <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 lg:px-6 sticky top-0 z-30">
+      <div className="flex items-center gap-3">
+        {/* Mobile menu toggle */}
+        <button
+          onClick={() => setIsMobileMenuOpen(true)}
+          className="lg:hidden p-2 -mr-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+        >
+          <Menu className="w-6 h-6" />
+        </button>
+
+        {/* Page title */}
+        <h2 className="text-xl font-semibold text-gray-800">
+          {current?.label || 'لوحة التحكم'}
+        </h2>
+      </div>
 
       <div className="flex items-center gap-4">
         {/* ── Bell button with dynamic badge ── */}
