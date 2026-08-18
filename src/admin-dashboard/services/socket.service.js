@@ -7,9 +7,8 @@ const SOCKET_URL = import.meta.env.DEV
 
 const socket = io(SOCKET_URL, {
   autoConnect: false,
-  withCredentials: true,
   auth: (cb) => {
-    const token = localStorage.getItem('auth_token');
+    const token = localStorage.getItem('auth_token') || localStorage.getItem('provider_token');
     cb({ token });
   },
 });
