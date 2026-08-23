@@ -14,7 +14,10 @@ import Modal from "../../../shared/components/ui/Modal";
 import ServiceModal from "./ServiceModal";
 
 export default function ProviderServicesPage() {
-  const { data: services = [], isLoading } = useProviderServices();
+  const [filter, setFilter] = useState("ALL"); // "ALL", "ACTIVE", "INACTIVE"
+  const availableIs = filter === "ALL" ? undefined : filter === "ACTIVE";
+
+  const { data: services = [], isLoading } = useProviderServices(availableIs);
   const { mutateAsync: addService, isPending: addingService } = useAddProviderService();
   const { mutateAsync: updateServiceAsync, mutate: updateService, isPending: updatingService } = useUpdateProviderService();
   const { mutateAsync: updatePricesAsync, isPending: updatingPrices } = useUpdateProviderServicePrices();
@@ -27,7 +30,7 @@ export default function ProviderServicesPage() {
   const [expandedCards, setExpandedCards] = useState({});
 
   const handleToggleActive = (serviceItem) => {
-    const current = serviceItem.availableIs ?? serviceItem.isActive;
+    const current = serviceItem.availableIs;
     updateService({
       id: serviceItem.id,
       availableIs: !current
@@ -99,6 +102,27 @@ export default function ProviderServicesPage() {
         </button>
       </div>
 
+      <div className="flex gap-2 border-b border-gray-200 pb-2">
+        <button
+          onClick={() => setFilter("ALL")}
+          className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${filter === "ALL" ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
+        >
+          All
+        </button>
+        <button
+          onClick={() => setFilter("ACTIVE")}
+          className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${filter === "ACTIVE" ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
+        >
+          Active
+        </button>
+        <button
+          onClick={() => setFilter("INACTIVE")}
+          className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${filter === "INACTIVE" ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
+        >
+          Inactive
+        </button>
+      </div>
+
       {/* Services Grid or Empty State */}
       {services.length === 0 ? (
         <Card className="flex flex-col items-center justify-center py-16 px-4 text-center border-dashed border-2 border-gray-200">
@@ -129,7 +153,7 @@ export default function ProviderServicesPage() {
                   </div>
                   <div className="flex items-center gap-2">
                     {(() => {
-                      const active = s.availableIs ?? s.isActive;
+                      const active = s.availableIs;
                       return (
                         <>
                           <span className={`text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded ${
@@ -150,11 +174,16 @@ export default function ProviderServicesPage() {
                 </div>
 
                 {/* Service Details */}
+                {s.service?.category?.name && (
+                  <div className="text-[10px] font-bold text-blue-600 mb-1.5 uppercase tracking-wide">
+                    {s.service.category.name}
+                  </div>
+                )}
                 <h3 className="font-bold text-gray-900 text-lg leading-tight mb-1">
-                  {s.overrideNameDisplay || ""}
+                  {s.overrideNameDisplay || s.service?.name || ""}
                 </h3>
                 <p className="text-xs text-gray-500 mt-1 line-clamp-2 leading-relaxed min-h-[2.5rem]">
-                  {s.overrideDescription || ""}
+                  {s.overrideDescription || s.service?.description || ""}
                 </p>
               </div>
 

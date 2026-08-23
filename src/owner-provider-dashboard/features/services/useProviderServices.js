@@ -16,10 +16,10 @@ export function useCatalogServices() {
   });
 }
 
-export function useProviderServices() {
+export function useProviderServices(availableIs) {
   return useQuery({
-    queryKey: ["provider-services"],
-    queryFn: getProviderServices,
+    queryKey: ["provider-services", availableIs],
+    queryFn: () => getProviderServices(availableIs),
     staleTime: 1000 * 60,
   });
 }
