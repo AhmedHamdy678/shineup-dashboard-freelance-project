@@ -21,18 +21,15 @@ export async function getCatalogServices() {
   return fetchCatalogServices();
 }
 
-export async function getProviderServices() {
+export async function getProviderServices(availableIs) {
   if (useMock) {
     return Promise.resolve(getMockProviderServices());
   }
-  const { data } = await providerAxiosClient.get('/providers/me/services', {
-    params: {
-      limit: 1000,
-      all: true,
-      includeInactive: true,
-      status: 'ALL'
-    }
-  });
+  const params = {};
+  if (availableIs !== undefined && availableIs !== null) {
+    params.availableIs = availableIs;
+  }
+  const { data } = await providerAxiosClient.get('/providers/me/services', { params });
   // The endpoint returns { items: [...] }; unwrap to a plain array.
   return Array.isArray(data?.items) ? data.items : [];
 }
