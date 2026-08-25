@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { ArrowRight, Calendar, FileText, AlertCircle, Ban, Copy, Check } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { ArrowRight, Calendar, FileText, AlertCircle, Ban, Copy, Check, X } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { v4 as uuidv4 } from 'uuid';
 import axiosClient from '../../../api/axiosClient';
 import formatDate from '../../../../shared/utils/formatDate';
+import { useApproveCancellationRequest, useRejectCancellationRequest } from '../useCancellationRequests';
 
 export default function CancellationRequestDetails({ requestId, onBack }) {
-  const queryClient = useQueryClient();
-  const [isApproving, setIsApproving] = useState(false);
+  const { mutate: approveRequest, isPending: isApproving } = useApproveCancellationRequest();
+  const { mutate: rejectRequest, isPending: isRejecting } = useRejectCancellationRequest();
 
   const { data: responseData, isLoading, isError } = useQuery({
     queryKey: ['admin-cancellation-request', requestId],
@@ -26,25 +26,15 @@ export default function CancellationRequestDetails({ requestId, onBack }) {
     toast.success('تم نسخ المرجع');
   };
 
-  const handleApprove = async () => {
-    if (!window.confirm("هل أنت متأكد من الموافقة على إلغاء هذا الحجز؟")) return;
-    
-    setIsApproving(true);
-    try {
-      await axiosClient.patch(`admin/booking-cancellation-requests/${requestId}/approve`, {}, {
-        headers: {
-          'Accept-Language': 'ar',
-          'Idempotency-Key': `cancel-approve-${requestId}-${uuidv4()}`
-        }
-      });
-      toast.success("تمت الموافقة على طلب الإلغاء بنجاح");
-      queryClient.invalidateQueries({ queryKey: ['admin-cancellation-request', requestId] });
-      queryClient.invalidateQueries({ queryKey: ['admin-cancellation-requests'] });
-    } catch (error) {
-      toast.error("حدث خطأ أثناء الموافقة على الطلب");
-      console.error(error);
-    } finally {
-      setIsApproving(false);
+  const handleApprove = () => {
+    if (window.confirm("هل أنت متأكد من الموافقة على إلغاء هذا الحجز؟")) {
+      approveRequest(requestId);
+    }
+  };
+
+  const handleReject = () => {
+    if (window.confirm("هل أنت متأكد من رفض طلب إلغاء هذا الحجز؟")) {
+      rejectRequest(requestId);
     }
   };
 
@@ -60,6 +50,9 @@ export default function CancellationRequestDetails({ requestId, onBack }) {
         text = 'text-green-800';
         break;
       case 'PENDING':
+      case 'WAITING_ADMIN_DECISION':
+      case 'ESCALATED_TO_ADMIN':
+      case 'ESCALATED':
         bg = 'bg-yellow-100';
         text = 'text-yellow-800';
         break;
@@ -79,6 +72,8 @@ export default function CancellationRequestDetails({ requestId, onBack }) {
       </span>
     );
   };
+
+  const isFinalStatus = data?.status && ['ADMIN_APPROVED', 'PROVIDER_APPROVED', 'REJECTED', 'PROVIDER_REJECTED', 'ADMIN_REJECTED', 'CANCELED'].includes(data.status.code);
 
   return (
     <div className="space-y-6" dir="rtl">
@@ -217,11 +212,24 @@ export default function CancellationRequestDetails({ requestId, onBack }) {
       </div>
 
       {/* Actions Footer */}
-      {!isLoading && !isError && data && (data.status?.code === 'PENDING' || data.status?.code === 'WAITING_ADMIN_DECISION') && (
-        <div className="flex justify-end pt-4 border-t border-gray-100">
+      {!isLoading && !isError && data && !isFinalStatus && (
+        <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
+          <button
+            onClick={handleReject}
+            disabled={isApproving || isRejecting}
+            className="flex items-center gap-2 px-6 py-2.5 bg-red-50 hover:bg-red-100 text-red-600 font-medium rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isRejecting ? (
+              <span className="w-5 h-5 border-2 border-red-600/20 border-t-red-600 rounded-full animate-spin"></span>
+            ) : (
+              <X className="w-5 h-5" />
+            )}
+            رفض الطلب
+          </button>
+          
           <button
             onClick={handleApprove}
-            disabled={isApproving}
+            disabled={isApproving || isRejecting}
             className="flex items-center gap-2 px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isApproving ? (

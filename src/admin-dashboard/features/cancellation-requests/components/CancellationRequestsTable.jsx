@@ -16,6 +16,9 @@ export default function CancellationRequestsTable({ items, onViewDetails }) {
         text = 'text-green-800';
         break;
       case 'PENDING':
+      case 'WAITING_ADMIN_DECISION':
+      case 'ESCALATED_TO_ADMIN':
+      case 'ESCALATED':
         bg = 'bg-yellow-100';
         text = 'text-yellow-800';
         break;

@@ -21,6 +21,7 @@ const CategoriesPage = lazy(() => import("../features/categories/CategoriesPage"
 const ServicesPage = lazy(() => import("../features/services/ServicesPage"));
 const DeductionsPage = lazy(() => import("../features/deductions/DeductionsPage"));
 const DeductionRuleDetailsPage = lazy(() => import("../features/deductions/DeductionRuleDetails"));
+const FinanceOverviewPage = lazy(() => import("../features/finance/FinanceOverviewPage"));
 const PlatformBankAccountsPage = lazy(() => import("../features/finance/PlatformBankAccountsPage"));
 const ProviderPayoutMethodsPage = lazy(() => import("../features/finance/ProviderPayoutMethodsPage"));
 const BankAccountDetailsPage = lazy(() => import("../features/finance/BankAccountDetailsPage"));
@@ -88,6 +89,7 @@ export default function AppRoutes() {
           <Route path="settings" element={<SuspenseWrapper><SettingsPage /></SuspenseWrapper>} />
           <Route path="deductions" element={<SuspenseWrapper><DeductionsPage /></SuspenseWrapper>} />
           <Route path="deductions/:ruleId" element={<SuspenseWrapper><DeductionRuleDetailsPage /></SuspenseWrapper>} />
+          <Route path="finance-overview" element={<SuspenseWrapper><FinanceOverviewPage /></SuspenseWrapper>} />
           <Route path="platform-accounts" element={<SuspenseWrapper><PlatformBankAccountsPage /></SuspenseWrapper>} />
           <Route path="provider-payout-methods" element={<SuspenseWrapper><ProviderPayoutMethodsPage /></SuspenseWrapper>} />
           <Route path="provider-payout-methods/:id" element={<SuspenseWrapper><BankAccountDetailsPage /></SuspenseWrapper>} />
