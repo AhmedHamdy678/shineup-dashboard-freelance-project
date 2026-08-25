@@ -188,6 +188,7 @@ export default function RefundDetails({ requestId, onBack }) {
       case 'COMPLETED':
         return <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800"><CheckCircle className="w-4 h-4 ml-1" /> مكتمل</span>;
       case 'PENDING':
+      case 'REQUESTED':
         return <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800"><Clock className="w-4 h-4 ml-1" /> قيد الانتظار</span>;
       case 'REJECTED':
         return <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800"><XCircle className="w-4 h-4 ml-1" /> مرفوض</span>;
@@ -277,7 +278,7 @@ export default function RefundDetails({ requestId, onBack }) {
 
       {/* Action Buttons Footer */}
       <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex gap-4 mt-6">
-        {data.status === 'PENDING' && (
+        {['PENDING', 'REQUESTED'].includes(data.status) && (
           <>
             <button 
               onClick={() => {

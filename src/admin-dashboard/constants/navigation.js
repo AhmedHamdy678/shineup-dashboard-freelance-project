@@ -2,6 +2,7 @@ import { LayoutDashboard, Store, Users, Calendar, Star, CreditCard, BarChart3, M
 
 export const generalNav = [
   { label: "لوحة التحكم", icon: LayoutDashboard, path: "/admin" },
+  { label: "الملخص المالي", icon: BarChart3, path: "/admin/finance-overview" },
   { label: "مقدمو الخدمات", icon: Store, path: "/admin/providers" },
   { label: "العملاء", icon: Users, path: "/admin/customers" },
   { label: "الحجوزات", icon: Calendar, path: "/admin/bookings" },

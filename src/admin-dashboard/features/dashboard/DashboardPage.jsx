@@ -26,9 +26,13 @@ export default function DashboardPage() {
   const { payments, providers, bookings, support, users, reviews } = data;
   const unreadSupport = (support?.unreadSupportConversations || 0) + (support?.unreadProviderSupportConversations || 0);
 
-  // Formatting currency
+  // Formatting currency (backend returns minor units / Halalas)
   const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('ar-SA', { style: 'currency', currency: 'SAR' }).format(amount || 0);
+    return new Intl.NumberFormat('en-SA', { 
+      style: 'currency', 
+      currency: 'SAR',
+      currencyDisplay: 'code'
+    }).format((amount || 0) / 100);
   };
 
   return (
