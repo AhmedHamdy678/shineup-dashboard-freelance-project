@@ -1,5 +1,6 @@
 // Trigger Vite watcher rebuild - update 3
 import { useState, useEffect } from "react";
+import toast from "react-hot-toast";
 import ChatSidebar from "./components/ChatSidebar";
 import ChatWindow from "./components/ChatWindow";
 import NewInternalChatModal from "./components/NewInternalChatModal";
@@ -69,7 +70,7 @@ export default function ProviderChatPage() {
   const handleSendMessage = (convId, text, onSuccessCallback) => {
     if (convId === "NEW") {
       if (!safeProviderId) {
-        alert("خطأ: تعذر العثور على المعرف الخاص بمزود الخدمة (providerId). جاري محاولة تحميل البيانات...");
+        toast.error('تعذر العثور على معرف مزود الخدمة. يرجى إعادة تحميل الصفحة.');
         return;
       }
       
@@ -89,12 +90,12 @@ export default function ProviderChatPage() {
               setActiveId(createdConv.id);
               if (onSuccessCallback) onSuccessCallback();
             } else {
-              alert("تم الإنشاء بنجاح لكن لم يتم العثور على ID المحادثة في الـ Response:\n" + JSON.stringify(response));
+              toast.error('تم الإنشاء لكن لم يتم استلام معرف المحادثة. يرجى تحديث الصفحة.');
             }
           },
           onError: (err) => {
             console.error("Failed to create conversation", err);
-            alert("فشل إنشاء المحادثة: " + (err?.response?.data?.message || err.message));
+            toast.error(err?.response?.data?.message || 'فشل إنشاء المحادثة');
           }
         }
       );
@@ -108,7 +109,7 @@ export default function ProviderChatPage() {
           },
           onError: (err) => {
             console.error("Failed to send message", err);
-            alert("فشل إرسال الرسالة: " + (err?.response?.data?.message || err.message));
+            toast.error(err?.response?.data?.message || 'فشل إرسال الرسالة');
           }
         }
       );

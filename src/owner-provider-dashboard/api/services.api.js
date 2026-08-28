@@ -39,8 +39,6 @@ export async function addProviderService(payload) {
     return Promise.resolve(addMockProviderService(payload));
   }
   const { data } = await providerAxiosClient.post('/providers/me/services', payload);
-  // console.log("addProviderService", data);
-  // console.log(payload, " payload  payload  payload ");
   return data;
 }
 

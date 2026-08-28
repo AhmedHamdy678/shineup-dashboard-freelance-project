@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { Send, MessageSquare, PlusCircle, Loader2 } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { useConversationMessages } from '../useConversationMessages';
 import MessageBubble from './MessageBubble';
 
@@ -35,7 +36,7 @@ export default function ChatWindow({
     e.preventDefault();
     if (!text.trim() || isCreating) return;
     if (selectedConversationId === "NEW" && isTeamChat && !selectedMemberId) {
-      alert("الرجاء اختيار عضو من الفريق للبدء بالمحادثة");
+      toast.error('يرجى اختيار عضو من الفريق للبدء بالمحادثة');
       return;
     }
     

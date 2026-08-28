@@ -199,7 +199,7 @@ export default function CustomersPage() {
                               onClick={(e) => {
                                 e.stopPropagation();
                                 setOpenDropdownId(null);
-                                console.log('Suspend', customer.id);
+                                // TODO: Implement suspend customer feature
                               }}
                               className="w-full text-start px-3 py-2 rounded-md text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
                             >

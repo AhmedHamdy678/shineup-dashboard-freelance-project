@@ -30,6 +30,27 @@ axiosClient.interceptors.response.use(
       localStorage.removeItem('auth_token');
       window.location.href = '/login';
     }
+
+    if (error.response?.status === 400 && error.response?.data) {
+      const data = error.response.data;
+      let detailedErrorString = '';
+
+      if (data.errors) {
+        const extracted = Object.values(data.errors).flat();
+        if (extracted.length > 0) {
+          detailedErrorString = extracted.join(' | ');
+        }
+      } else if (data.error) {
+        detailedErrorString = typeof data.error === 'string' 
+          ? data.error 
+          : JSON.stringify(data.error);
+      }
+
+      if (detailedErrorString) {
+        error.response.data.message = detailedErrorString;
+      }
+    }
+
     return Promise.reject(error);
   },
 );

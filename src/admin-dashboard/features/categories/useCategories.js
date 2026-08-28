@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import toast from 'react-hot-toast';
 import {
   getCategories,
   createCategory,
@@ -21,17 +22,17 @@ export function useCategoryMutations() {
   const create = useMutation({
     mutationFn: createCategory,
     onSuccess: invalidate,
-    onError: (err) => alert(err?.response?.data?.message || 'Failed to create category'),
+    onError: (err) => toast.error(err?.response?.data?.message || 'فشل إنشاء التصنيف'),
   });
   const update = useMutation({
     mutationFn: ({ id, payload }) => updateCategory(id, payload),
     onSuccess: invalidate,
-    onError: (err) => alert(err?.response?.data?.message || 'Failed to update category'),
+    onError: (err) => toast.error(err?.response?.data?.message || 'فشل تحديث التصنيف'),
   });
   const remove = useMutation({
     mutationFn: deleteCategory,
     onSuccess: invalidate,
-    onError: (err) => alert(err?.response?.data?.message || 'Failed to delete category'),
+    onError: (err) => toast.error(err?.response?.data?.message || 'فشل حذف التصنيف'),
   });
 
   return { create, update, remove };

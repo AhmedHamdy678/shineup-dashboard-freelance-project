@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
+import toast from 'react-hot-toast';
 import { Clock, Calendar, AlertCircle, CheckCircle, Edit, Trash2 } from 'lucide-react';
 import providerAxiosClient from '../../api/providerAxiosClient';
 import Modal from '../../../shared/components/ui/Modal';
@@ -16,6 +17,8 @@ const dayNames = [
 ];
 
 const formatMinutesToTime = (minutes) => {
+  // Bug #6 fix: guard against null/undefined/NaN inputs
+  if (minutes == null || isNaN(minutes)) return '--:--';
   const hours = Math.floor(minutes / 60);
   const mins = minutes % 60;
   
@@ -33,6 +36,34 @@ export default function MemberWorkSchedule({ memberId }) {
   const [isExceptionModalOpen, setIsExceptionModalOpen] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
 
+  // Bug #1 fix: wrap fetchSchedule in useCallback so it can be safely listed
+  // as a dependency and called from handleDeleteException without stale closures.
+  const fetchSchedule = useCallback(async (isMountedRef) => {
+    try {
+      setIsLoading(true);
+      const response = await providerAxiosClient.get(`/providers/me/members/${memberId}/work-schedule`);
+      // Only update state if the component is still mounted
+      if (!isMountedRef || isMountedRef.current) {
+        setSchedule(response.data);
+      }
+    } catch (err) {
+      console.error('Work schedule fetch error:', err);
+      if (!isMountedRef || isMountedRef.current) {
+        // Bug #2 fix: Only treat 404 as "no schedule"; surface all other errors
+        if (err.response?.status === 404) {
+          setSchedule({ periods: [], exceptions: [] });
+          setError(null);
+        } else {
+          setError('حدث خطأ أثناء تحميل جدول العمل. يرجى المحاولة مرة أخرى.');
+        }
+      }
+    } finally {
+      if (!isMountedRef || isMountedRef.current) {
+        setIsLoading(false);
+      }
+    }
+  }, [memberId]);
+
   const handleDeleteException = async (exceptionId) => {
     if (!window.confirm("هل أنت متأكد من إلغاء هذا الاستثناء؟")) {
       return;
@@ -41,34 +72,27 @@ export default function MemberWorkSchedule({ memberId }) {
     try {
       setDeletingId(exceptionId);
       await providerAxiosClient.delete(`/providers/me/members/${memberId}/work-schedule/exceptions/${exceptionId}`);
+      // Bug #3 fix: pass no isMountedRef here — component is still mounted on user action
       await fetchSchedule();
     } catch (err) {
       console.error('Failed to delete exception:', err);
-      alert('حدث خطأ أثناء محاولة الحذف. يرجى المحاولة مرة أخرى.');
+      // Bug #3 fix: replace alert() with toast.error for consistency
+      toast.error(err.response?.data?.message || 'حدث خطأ أثناء محاولة الحذف. يرجى المحاولة مرة أخرى.');
     } finally {
       setDeletingId(null);
     }
   };
 
-  const fetchSchedule = async () => {
-    try {
-      setIsLoading(true);
-      const response = await providerAxiosClient.get(`/providers/me/members/${memberId}/work-schedule`);
-      setSchedule(response.data);
-    } catch (err) {
-      console.error('Work schedule fetch error:', err);
-      setSchedule({ periods: [], exceptions: [] });
-      setError(null);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   useEffect(() => {
+    // Bug #1 fix: isMounted ref prevents state updates after unmount
+    const isMountedRef = { current: true };
     if (memberId) {
-      fetchSchedule();
+      fetchSchedule(isMountedRef);
     }
-  }, [memberId]);
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, [memberId, fetchSchedule]);
 
   if (isLoading) {
     return (

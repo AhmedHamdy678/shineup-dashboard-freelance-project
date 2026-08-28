@@ -13,7 +13,16 @@ export const useApproveCancellationRequest = () => {
       queryClient.invalidateQueries({ queryKey: ['admin-cancellation-requests'] });
     },
     onError: (error) => {
-      toast.error('حدث خطأ أثناء الموافقة على الطلب');
+      let errorMessage = error.response?.data?.message || 'حدث خطأ أثناء الموافقة على الطلب';
+      if (error.response?.data?.errors) {
+        const detailedErrors = Object.values(error.response.data.errors).flat();
+        if (detailedErrors.length > 0) {
+          errorMessage = detailedErrors.join('، ');
+        }
+      } else if (error.response?.data?.error) {
+        errorMessage = typeof error.response.data.error === 'string' ? error.response.data.error : errorMessage;
+      }
+      toast.error(errorMessage);
       console.error(error);
     }
   });
@@ -30,7 +39,16 @@ export const useRejectCancellationRequest = () => {
       queryClient.invalidateQueries({ queryKey: ['admin-cancellation-requests'] });
     },
     onError: (error) => {
-      toast.error('حدث خطأ أثناء رفض الطلب');
+      let errorMessage = error.response?.data?.message || 'حدث خطأ أثناء رفض الطلب';
+      if (error.response?.data?.errors) {
+        const detailedErrors = Object.values(error.response.data.errors).flat();
+        if (detailedErrors.length > 0) {
+          errorMessage = detailedErrors.join('، ');
+        }
+      } else if (error.response?.data?.error) {
+        errorMessage = typeof error.response.data.error === 'string' ? error.response.data.error : errorMessage;
+      }
+      toast.error(errorMessage);
       console.error(error);
     }
   });

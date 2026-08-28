@@ -146,6 +146,35 @@ export default function MemberScheduleForm({ memberId, onSaveSuccess, onClose })
   const handleSubmit = async (e) => {
     e.preventDefault();
     
+    // --- Validation Block ---
+    for (const dayStr in days) {
+      const dayData = days[dayStr];
+      if (!dayData.active) continue;
+
+      const validPeriods = dayData.periods.filter(p => p.start && p.end);
+
+      // 1. Check if End <= Start
+      const hasInvalidTime = validPeriods.some(p => timeToMinutes(p.end) <= timeToMinutes(p.start));
+      if (hasInvalidTime) {
+        toast.error("وقت النهاية يجب أن يكون بعد وقت البداية");
+        return;
+      }
+
+      // 2. Check for overlaps
+      if (validPeriods.length > 1) {
+        const sortedPeriods = [...validPeriods].sort((a, b) => timeToMinutes(a.start) - timeToMinutes(b.start));
+        for (let i = 0; i < sortedPeriods.length - 1; i++) {
+          const currentEnd = timeToMinutes(sortedPeriods[i].end);
+          const nextStart = timeToMinutes(sortedPeriods[i + 1].start);
+          if (currentEnd > nextStart) {
+            toast.error("يجب ألا تتداخل فترات جدول العمل لليوم نفسه");
+            return;
+          }
+        }
+      }
+    }
+    // --- End Validation Block ---
+
     // Construct payload
     const periodsPayload = [];
     Object.keys(days).forEach((dayStr) => {
@@ -177,6 +206,8 @@ export default function MemberScheduleForm({ memberId, onSaveSuccess, onClose })
       if (onSaveSuccess) onSaveSuccess();
     } catch (err) {
       console.error(err);
+      // Bug #4 fix: The global Axios interceptor already normalizes all 400
+      // validation errors into err.response.data.message — no need to re-extract.
       toast.error(err.response?.data?.message || 'حدث خطأ أثناء حفظ الجدول');
     } finally {
       setIsSaving(false);

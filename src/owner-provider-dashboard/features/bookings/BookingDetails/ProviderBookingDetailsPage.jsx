@@ -17,8 +17,6 @@ export default function ProviderBookingDetailsPage() {
     queryFn: () => getProviderBookingById(id),
   });
 
-  console.log(data);
-
   if (isLoading) {
     return (
       <div className="p-6 text-gray-500 text-center py-10">

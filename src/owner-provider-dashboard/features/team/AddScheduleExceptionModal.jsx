@@ -15,7 +15,14 @@ export default function AddScheduleExceptionModal({ memberId, onClose, onSaveSuc
     
     const start = new Date(startsAt);
     const end = new Date(endsAt);
-    
+
+    // Bug #8 fix: new Date('') produces Invalid Date; NaN comparisons always
+    // return false, allowing the form to submit garbage ISO strings to the API.
+    if (!startsAt || !endsAt || isNaN(start.getTime()) || isNaN(end.getTime())) {
+      setError('يرجى تحديد تاريخ ووقت صالحين للبداية والنهاية');
+      return;
+    }
+
     if (end <= start) {
       setError('وقت النهاية يجب أن يكون بعد وقت البداية');
       return;
