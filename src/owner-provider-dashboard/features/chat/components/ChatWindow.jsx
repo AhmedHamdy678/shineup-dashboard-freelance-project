@@ -13,7 +13,13 @@ export default function ChatWindow({
   isTeamChat,
   members = []
 }) {
-  const { data, isLoading } = useConversationMessages(selectedConversationId !== "NEW" ? selectedConversationId : null);
+  const { 
+    data, 
+    isLoading,
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage
+  } = useConversationMessages(selectedConversationId !== "NEW" ? selectedConversationId : null);
   const messagesEndRef = useRef(null);
   const [text, setText] = useState("");
   const [selectedMemberId, setSelectedMemberId] = useState("");
@@ -22,15 +28,51 @@ export default function ChatWindow({
   const messages = selectedConversationId === "NEW" ? [] : (data?.items || activeConversation?.messages || []);
   const conversationMeta = selectedConversationId === "NEW" ? { title: isTeamChat ? "محادثة جديدة مع الفريق" : "تذكرة دعم جديدة", status: "NEW" } : (data?.conversation || activeConversation);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+  // Observer for Infinite Scroll UP (Load previous messages)
+  const observerTarget = useRef(null);
+  
+  useEffect(() => {
+    const target = observerTarget.current;
+    if (!target || !hasNextPage || isFetchingNextPage) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          fetchNextPage();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    observer.observe(target);
+    return () => observer.unobserve(target);
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  // Maintain scroll position when fetching older messages (scrolling UP)
+  // or auto-scroll to bottom when new messages arrive
+  const previousScrollHeight = useRef(0);
+  const containerRef = useRef(null);
 
   useEffect(() => {
-    if (messages.length > 0) {
-      scrollToBottom();
+    if (!containerRef.current) return;
+    const container = containerRef.current;
+    
+    // If we are at the bottom (or very close), auto-scroll to the new bottom
+    const isAtBottom = container.scrollHeight - container.scrollTop <= container.clientHeight + 100;
+    
+    if (isFetchingNextPage) {
+      // Remember height before old messages are added to the top
+      previousScrollHeight.current = container.scrollHeight;
+    } else if (previousScrollHeight.current > 0) {
+      // Old messages were just added to the top. Adjust scroll position so we don't jump!
+      const newScrollHeight = container.scrollHeight;
+      container.scrollTop += (newScrollHeight - previousScrollHeight.current);
+      previousScrollHeight.current = 0; // Reset
+    } else if (isAtBottom) {
+      // New message added at the bottom, auto-scroll to it
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }
-  }, [messages]);
+  }, [messages, isFetchingNextPage]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -114,7 +156,7 @@ export default function ChatWindow({
       </div>
 
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-4 md:p-6 custom-scrollbar flex flex-col">
+      <div ref={containerRef} className="flex-1 overflow-y-auto p-4 md:p-6 custom-scrollbar flex flex-col relative">
         {isLoading && selectedConversationId !== "NEW" ? (
           <div className="flex flex-col gap-4 animate-pulse">
             {[1, 2, 3].map(i => (
@@ -129,6 +171,11 @@ export default function ChatWindow({
           </div>
         ) : (
           <div className="flex flex-col mt-auto">
+            {/* Infinite Scroll Top Observer */}
+            <div ref={observerTarget} className="h-4 flex justify-center items-center w-full my-2">
+              {isFetchingNextPage && <Loader2 className="w-5 h-5 animate-spin text-emerald-500" />}
+            </div>
+            
             {messages.map((msg) => {
               const isOwnMessage = msg.senderUserId === currentUserId;
               const isRead = conversationMeta?.participants?.some(participant => 

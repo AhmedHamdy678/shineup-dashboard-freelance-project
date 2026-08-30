@@ -26,9 +26,14 @@ export async function getConversations(params = { type: 'PROVIDER_SUPPORT', page
  * @param {number} page 
  * @param {number} limit 
  */
-export async function getConversationMessages(conversationId, page = 1, limit = 30) {
+export async function getConversationMessages(conversationId, cursor = null, limit = 30) {
+  const params = { mode: 'cursor', limit };
+  if (cursor) {
+    params.beforeMessageId = cursor;
+  }
+  
   const { data } = await providerAxiosClient.get(`/conversations/${conversationId}/messages`, {
-    params: { page, limit },
+    params,
   });
   return data?.data || data;
 }

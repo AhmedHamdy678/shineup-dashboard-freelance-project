@@ -14,9 +14,18 @@ export const getSupportConversations = async () => {
   return data;
 };
 
-export const getMessageHistory = async (conversationId, page = 1, limit = 30) => {
+export const getMessageHistory = async (conversationId, cursor = null, limit = 30) => {
   if (useMock) return Promise.resolve({ items: mockMessages[conversationId] ?? [] });
-  const { data } = await axiosClient.get(`/conversations/${conversationId}/messages?page=${page}&limit=${limit}`);
+  
+  const params = new URLSearchParams({
+    mode: 'cursor',
+    limit: limit.toString(),
+  });
+  if (cursor) {
+    params.append('beforeMessageId', cursor);
+  }
+  
+  const { data } = await axiosClient.get(`/conversations/${conversationId}/messages?${params.toString()}`);
   return data;
 };
 

@@ -7,6 +7,7 @@ import ProviderLayout from "../../owner-provider-dashboard/components/layout/Pro
 import ProviderProtectedRoute from "../../owner-provider-dashboard/routes/ProviderProtectedRoute";
 
 const LoginPage = lazy(() => import("../features/auth/LoginPage"));
+const ForgotPasswordPage = lazy(() => import("../features/auth/ForgotPasswordPage"));
 const DashboardPage = lazy(() => import("../features/dashboard/DashboardPage"));
 const ProvidersPage = lazy(() => import("../features/providers/ProvidersPage"));
 const ProviderReviewPage = lazy(() => import("../features/providers/ProviderReviewPage"));
@@ -62,6 +63,7 @@ export default function AppRoutes() {
     <Routes>
       <Route path="/" element={<Navigate to="/admin" replace />} />
       <Route path="/login" element={<SuspenseWrapper><LoginPage /></SuspenseWrapper>} />
+      <Route path="/forgot-password" element={<SuspenseWrapper><ForgotPasswordPage /></SuspenseWrapper>} />
       <Route path="/provider/login" element={<SuspenseWrapper><ProviderLoginPage /></SuspenseWrapper>} />
       <Route path="/provider/register" element={<SuspenseWrapper><ProviderRegisterPage /></SuspenseWrapper>} />
       

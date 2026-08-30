@@ -61,10 +61,14 @@ export default function ProviderTopbar({ setIsMobileMenuOpen }) {
           )}
         </button>
 
-        {/* Avatar */}
-        <div className="w-8 h-8 rounded-full bg-emerald-600 flex items-center justify-center text-white text-sm font-semibold">
+        {/* Avatar — links to profile */}
+        <button
+          onClick={() => navigate('/provider/profile')}
+          title="الملف التجاري"
+          className="w-8 h-8 rounded-full bg-emerald-600 flex items-center justify-center text-white text-sm font-semibold cursor-pointer hover:opacity-80 transition-opacity"
+        >
           {userInitial}
-        </div>
+        </button>
       </div>
     </header>
   );

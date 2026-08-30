@@ -1,10 +1,12 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useMutation, useQuery, useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import axiosClient from '../../../api/axiosClient';
+import { getMessageHistory } from '../../../api/endpoints/chat.api';
 import toast from 'react-hot-toast';
-import { MessageSquare, ShieldCheck, Clock, User, AlertTriangle, Send, CheckCircle } from 'lucide-react';
+import { MessageSquare, ShieldCheck, Clock, User, AlertTriangle, Send, CheckCircle, Loader2 } from 'lucide-react';
 import formatDate from '../../../../shared/utils/formatDate';
 import useAuthStore from '../../../store/authStore';
+import { joinConversation, leaveConversation, onNewMessage } from '../../../services/socket.service';
 
 const statusConfig = {
   UNASSIGNED: { label: 'تذكرة جديدة', color: 'bg-amber-100 text-amber-800 border-amber-200' },
@@ -20,9 +22,44 @@ export default function AdminSupportThread({ selectedConversation, onConversatio
   const [inputText, setInputText] = useState('');
   const messagesEndRef = useRef(null);
 
+  // Live messages received via WebSocket since the last full query fetch.
+  // Reset whenever the selected conversation changes.
+  const [realTimeMessages, setRealTimeMessages] = useState([]);
+
   const isUnassigned = selectedConversation?.supportStatus === 'UNASSIGNED';
   const isResolved = selectedConversation?.supportStatus === 'RESOLVED';
   const conversationId = selectedConversation?.conversationId;
+
+  // ── Reset live buffer when conversation changes ────────────────────────────
+  useEffect(() => {
+    setRealTimeMessages([]);
+  }, [conversationId]);
+
+  // ── Join conversation room + listen to real-time messages ──────────────────
+  // Bypasses React Query cache entirely: incoming messages are stored in
+  // local state and merged with the historical query data at render time.
+  useEffect(() => {
+    if (!conversationId) return;
+
+    joinConversation(conversationId);
+
+    const unsub = onNewMessage((payload) => {
+      const msg = payload.message ?? payload;
+      // Ignore messages that belong to a different conversation
+      if (msg.conversationId !== conversationId) return;
+
+      setRealTimeMessages((prev) => {
+        // Deduplicate by message ID
+        if (prev.some((m) => m.id === msg.id)) return prev;
+        return [...prev, msg];
+      });
+    });
+
+    return () => {
+      leaveConversation(conversationId);
+      unsub();
+    };
+  }, [conversationId]);
 
   // 1. Fetch Conversation Details
   const { data: conversationDetails, isLoading: isDetailsLoading } = useQuery({
@@ -43,39 +80,74 @@ export default function AdminSupportThread({ selectedConversation, onConversatio
     isLoading: isMessagesLoading
   } = useInfiniteQuery({
     queryKey: ['admin-messages', conversationId],
-    queryFn: async ({ pageParam = 1 }) => {
-      const res = await axiosClient.get(`/conversations/${conversationId}/messages`, {
-        params: { page: pageParam, limit: 50 }
-      });
-      return res.data;
-    },
+    queryFn: ({ pageParam = null }) => getMessageHistory(conversationId, pageParam, 30),
+    initialPageParam: null,
     getNextPageParam: (lastPage) => {
-      if (lastPage?.pagination?.page < lastPage?.pagination?.totalPages) {
-        return lastPage.pagination.page + 1;
+      const pagination = lastPage?.pagination || lastPage?.data?.pagination;
+      if (pagination && pagination.nextCursor) {
+        return pagination.nextCursor;
       }
       return undefined;
     },
     enabled: !!conversationId && !isUnassigned,
+    staleTime: 1000 * 60,
     select: (data) => {
-      // Flatten all pages into one array and sort by createdAt ascending (oldest first at top, newest at bottom)
-      const allMessages = data.pages.flatMap((page) => page.items || page.data || []);
+      const allMessages = data.pages.flatMap((page) => page.items || page.data?.items || []);
       return allMessages.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
     }
   });
 
-  const messages = messagesData || [];
-
-  // Scroll to bottom on new messages
+  const observerTarget = useRef(null);
+  
   useEffect(() => {
-    const timer = setTimeout(() => {
-      if (messagesEndRef.current) {
-        messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
-      }
-    }, 100);
-    return () => clearTimeout(timer);
-  }, [messages.length, conversationId]);
+    const target = observerTarget.current;
+    if (!target || !hasNextPage || isFetchingNextPage) return;
 
-  // 3. Mark as Read
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          fetchNextPage();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    observer.observe(target);
+    return () => observer.unobserve(target);
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  const messages = useMemo(() => {
+    const fromQuery = messagesData ?? [];
+    if (realTimeMessages.length === 0) return fromQuery;
+
+    const queryIds = new Set(fromQuery.map((m) => m.id));
+    const newOnly = realTimeMessages.filter((m) => !queryIds.has(m.id));
+    if (newOnly.length === 0) return fromQuery;
+
+    const combined = [...fromQuery, ...newOnly];
+    return combined.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+  }, [messagesData, realTimeMessages]);
+
+  const previousScrollHeight = useRef(0);
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const container = containerRef.current;
+    
+    const isAtBottom = container.scrollHeight - container.scrollTop <= container.clientHeight + 100;
+    
+    if (isFetchingNextPage) {
+      previousScrollHeight.current = container.scrollHeight;
+    } else if (previousScrollHeight.current > 0) {
+      const newScrollHeight = container.scrollHeight;
+      container.scrollTop += (newScrollHeight - previousScrollHeight.current);
+      previousScrollHeight.current = 0;
+    } else if (isAtBottom) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages, isFetchingNextPage]);
+
   useEffect(() => {
     if (conversationId && !isUnassigned) {
       axiosClient.post(`/conversations/${conversationId}/read`)
@@ -86,7 +158,6 @@ export default function AdminSupportThread({ selectedConversation, onConversatio
     }
   }, [conversationId, isUnassigned, messages.length, queryClient]);
 
-  // 4. Claim Mutation
   const claimMutation = useMutation({
     mutationFn: async (id) => {
       const res = await axiosClient.post(`/admin/support-conversations/${id}/claim`);
@@ -106,7 +177,6 @@ export default function AdminSupportThread({ selectedConversation, onConversatio
     }
   });
 
-  // 5. Send Message Mutation
   const sendMessageMutation = useMutation({
     mutationFn: async (text) => {
       const clientMessageId = crypto.randomUUID();
@@ -126,7 +196,6 @@ export default function AdminSupportThread({ selectedConversation, onConversatio
     }
   });
 
-  // 6. Resolve Ticket Mutation
   const resolveMutation = useMutation({
     mutationFn: async () => {
       const res = await axiosClient.post(`/admin/support-conversations/${conversationId}/resolve`);
@@ -173,7 +242,6 @@ export default function AdminSupportThread({ selectedConversation, onConversatio
 
   return (
     <div className="flex-1 flex flex-col bg-white h-full relative" dir="rtl">
-      {/* Header */}
       <div className="p-4 border-b border-gray-200 bg-white flex items-center justify-between shadow-sm z-10 shrink-0">
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center border border-gray-200 shrink-0">
@@ -225,8 +293,7 @@ export default function AdminSupportThread({ selectedConversation, onConversatio
         </div>
       </div>
 
-      {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto bg-[#F0F2F5] flex flex-col p-4 custom-scrollbar">
+      <div ref={containerRef} className="flex-1 overflow-y-auto bg-[#F0F2F5] flex flex-col p-4 custom-scrollbar relative">
          {isDetailsLoading || isMessagesLoading ? (
            <div className="space-y-4 w-full">
              <div className="flex gap-3">
@@ -247,15 +314,10 @@ export default function AdminSupportThread({ selectedConversation, onConversatio
            </div>
          ) : (
            <>
-             {hasNextPage && (
-               <button 
-                 onClick={() => fetchNextPage()} 
-                 disabled={isFetchingNextPage}
-                 className="mx-auto mb-4 px-3 py-1 text-xs bg-white text-blue-600 rounded-full shadow-sm hover:bg-blue-50"
-               >
-                 {isFetchingNextPage ? 'جاري التحميل...' : 'تحميل الرسائل السابقة'}
-               </button>
-             )}
+              {/* Infinite Scroll Top Observer */}
+              <div ref={observerTarget} className="h-4 flex justify-center items-center w-full my-2">
+                {isFetchingNextPage && <Loader2 className="w-5 h-5 animate-spin text-emerald-500" />}
+              </div>
              
              <div className="space-y-4">
                {messages.map((msg, idx) => {
@@ -263,8 +325,11 @@ export default function AdminSupportThread({ selectedConversation, onConversatio
                  return (
                    <div key={msg.id || idx} className={`flex ${isAdmin ? 'justify-start' : 'justify-end'}`}>
                      <div className={`max-w-[75%] sm:max-w-[65%] flex flex-col ${isAdmin ? 'items-start' : 'items-end'}`}>
-                       <span className="text-[10px] text-gray-500 mb-1 px-1 font-medium">
-                         {msg.sender?.fullName || msg.sender?.name || (isAdmin ? 'أنت' : 'مزود الخدمة')}
+                       <span className="text-[10px] text-gray-500 mb-1 px-1 font-medium flex items-center gap-1.5">
+                         <span>{msg.sender?.fullName || msg.sender?.name || (isAdmin ? 'أنت' : 'مزود الخدمة')}</span>
+                         <span className="text-gray-400 font-normal">
+                           {msg.createdAt ? formatDate(msg.createdAt, false) : ''}
+                         </span>
                        </span>
                        <div className={`relative px-4 py-2.5 rounded-2xl shadow-sm text-sm ${
                          isAdmin 
@@ -273,7 +338,7 @@ export default function AdminSupportThread({ selectedConversation, onConversatio
                        }`}>
                          <p className="whitespace-pre-wrap leading-relaxed">{msg.body}</p>
                          <div className={`text-[10px] mt-1 ${isAdmin ? 'text-blue-100 text-left' : 'text-gray-400 text-right'}`} dir="ltr">
-                           {formatDate(msg.createdAt, true)}
+                           {msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' }) : ''}
                          </div>
                        </div>
                      </div>

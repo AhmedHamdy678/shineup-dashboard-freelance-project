@@ -12,6 +12,7 @@
  *   onDelete(id) — called when the trash button is clicked
  */
 import { Trash2, Star, CheckCircle, XCircle, AlertTriangle, Users, Wallet, BellRing } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 // ─── Icon & color config per notification type ──────────────────────────────
 const TYPE_CONFIG = {
@@ -71,17 +72,41 @@ function timeAgo(isoString) {
 
 // ─── Component ────────────────────────────────────────────────────────────────
 export default function NotificationCard({ notification, onDelete }) {
-  const { id, type, title, body, readAt, createdAt } = notification;
+  const navigate = useNavigate();
+  const { id, type, title, body, readAt, createdAt, link } = notification;
   const isUnread = readAt === null;
   const config = TYPE_CONFIG[type] ?? DEFAULT_CONFIG;
   const { Icon, bg, iconColor } = config;
 
+  const handleCardClick = () => {
+    if (link) {
+      navigate(link);
+      return;
+    }
+
+    switch (type) {
+      case 'REVIEW_RECEIVED': navigate('/provider/reviews'); break;
+      case 'BOOKING_CONFIRMED':
+      case 'BOOKING_CANCELLED': navigate('/provider/bookings'); break;
+      case 'PAYMENT_RECEIVED': navigate('/provider/wallet'); break;
+      case 'TEAM_MEMBER_ADDED': navigate('/provider/team'); break;
+      case 'PROVIDER_REJECTED': navigate('/provider/profile'); break;
+      default:
+        // Fallback checks for title/body content
+        if (title?.includes('دعم') || body?.includes('رسالة')) {
+          navigate('/provider/chat');
+        }
+        break;
+    }
+  };
+
   return (
     <div
-      className={`flex items-start gap-4 p-4 mb-3 rounded-xl border transition-colors ${
+      onClick={handleCardClick}
+      className={`flex items-start gap-4 p-4 mb-3 rounded-xl border transition-colors cursor-pointer hover:shadow-sm ${
         isUnread
-          ? 'bg-blue-50/60 border-blue-100'
-          : 'bg-white border-gray-200'
+          ? 'bg-blue-50/60 border-blue-100 hover:bg-blue-50'
+          : 'bg-white border-gray-200 hover:bg-gray-50'
       }`}
     >
       {/* ── Left: type icon ── */}
@@ -106,7 +131,10 @@ export default function NotificationCard({ notification, onDelete }) {
 
       {/* ── Right: delete button ── */}
       <button
-        onClick={() => onDelete(id)}
+        onClick={(e) => {
+          e.stopPropagation();
+          onDelete(id);
+        }}
         className="shrink-0 p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
         title="حذف الإشعار"
       >

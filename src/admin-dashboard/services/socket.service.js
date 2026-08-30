@@ -7,13 +7,15 @@ const SOCKET_URL = import.meta.env.DEV
 
 const socket = io(SOCKET_URL, {
   autoConnect: false,
-  auth: (cb) => {
-    const token = localStorage.getItem('auth_token') || localStorage.getItem('provider_token');
-    cb({ token });
-  },
 });
 
-export function connectSocket() {
+export function connectSocket(token) {
+  if (token) {
+    socket.auth = { token };
+  } else {
+    // Fallback if no token passed
+    socket.auth = { token: localStorage.getItem('auth_token') || localStorage.getItem('provider_token') };
+  }
   if (!socket.connected) socket.connect();
 }
 
@@ -22,11 +24,11 @@ export function disconnectSocket() {
 }
 
 export function joinConversation(conversationId) {
-  socket.emit('join_conversation', { conversationId });
+  socket.emit('conversation:join', { conversationId });
 }
 
 export function leaveConversation(conversationId) {
-  socket.emit('leave_conversation', { conversationId });
+  socket.emit('conversation:leave', { conversationId });
 }
 
 export function sendMessage({ conversationId, content }) {
@@ -34,8 +36,19 @@ export function sendMessage({ conversationId, content }) {
 }
 
 export function onNewMessage(callback) {
-  socket.on('new_message', callback);
-  return () => socket.off('new_message', callback);
+  socket.on('message:created', callback);
+  return () => socket.off('message:created', callback);
+}
+
+/**
+ * Subscribe to global notification broadcasts.
+ * The backend emits 'notification.created' (dot separator) whenever a new
+ * notification is created for the authenticated user (any role).
+ * Returns an unsubscribe function — call it in the useEffect cleanup.
+ */
+export function onNewNotification(callback) {
+  socket.on('notification.created', callback);
+  return () => socket.off('notification.created', callback);
 }
 
 export function onConnectionError(callback) {
@@ -48,3 +61,4 @@ export function isConnected() {
 }
 
 export default socket;
+

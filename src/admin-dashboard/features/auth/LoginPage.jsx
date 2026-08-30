@@ -119,8 +119,7 @@ export default function LoginPage() {
                   كلمة المرور
                 </label>
                 <Link
-                  to="#"
-                  onClick={(e) => { e.preventDefault(); alert('سيتم تفعيل هذه الميزة قريباً'); }}
+                  to="/forgot-password"
                   className="text-xs font-semibold text-blue-600 hover:text-blue-700 transition hover:underline"
                 >
                   نسيت كلمة المرور؟

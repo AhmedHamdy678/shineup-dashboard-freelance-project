@@ -19,7 +19,9 @@ export default function Topbar({ setIsMobileMenuOpen }) {
       const res = await axiosClient.get('/notifications/me/unread-count');
       return res.data;
     },
-    refetchInterval: 60000,
+    // TODO: Replace with WebSocket 'notification:new' event to update badge instantly
+    refetchInterval: 180000,    // Fallback poll every 3 min
+    refetchOnWindowFocus: true, // Badge refreshes when admin returns to tab
   });
 
   const { data: supportData } = useQuery({
@@ -28,7 +30,9 @@ export default function Topbar({ setIsMobileMenuOpen }) {
       const res = await axiosClient.get('/admin/support-conversations?type=PROVIDER_SUPPORT&page=1&limit=20');
       return res.data;
     },
-    refetchInterval: 60000,
+    // TODO: useChatSocket already invalidates 'admin-support-conversations' on new_message
+    refetchInterval: 180000,    // Fallback poll every 3 min
+    refetchOnWindowFocus: true, // Badge refreshes when admin returns to tab
   });
 
   const notificationsUnreadCount = unreadData?.unreadCount || 0;
@@ -56,10 +60,14 @@ export default function Topbar({ setIsMobileMenuOpen }) {
           </svg>
           {unreadCount > 0 && <span className="absolute top-0 right-0 h-2 w-2 rounded-full bg-red-600"></span>}
         </Link>
-        {/* Avatar placeholder */}
-        <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-sm font-semibold">
+        {/* Avatar — links to settings */}
+        <Link
+          to="/admin/settings"
+          title="الإعدادات"
+          className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-sm font-semibold cursor-pointer hover:opacity-80 transition-opacity"
+        >
           A
-        </div>
+        </Link>
       </div>
     </header>
   );

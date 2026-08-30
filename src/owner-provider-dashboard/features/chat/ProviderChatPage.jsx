@@ -8,6 +8,7 @@ import { useProviderConversations, useCreateConversation, useSendMessage } from 
 import useProviderAuthStore from "../../store/providerAuthStore";
 import { useDashboardOverview } from "../dashboard/useDashboardOverview";
 import { useTeam } from "../team/useTeam";
+import useChatStore from "../../../admin-dashboard/store/chatStore";
 
 export default function ProviderChatPage() {
   const [activeTab, setActiveTab] = useState("ADMIN"); // "ADMIN" or "TEAM"
@@ -17,6 +18,7 @@ export default function ProviderChatPage() {
   const [isTeamModalOpen, setIsTeamModalOpen] = useState(false);
 
   const { user } = useProviderAuthStore();
+  const setActiveConversationInStore = useChatStore((s) => s.setActiveConversation);
   
   // Fetch dashboard data safely to ensure we have the providerId
   const { data: dashboardData } = useDashboardOverview();
@@ -48,17 +50,23 @@ export default function ProviderChatPage() {
     if (displayedConversations.length > 0) {
       if (activeId && activeId !== "NEW") {
         const exists = displayedConversations.some((c) => c.id === activeId);
-        // Reset to null if the currently selected conversation no longer exists
         if (!exists) {
           setActiveId(null);
+          setActiveConversationInStore(null);
         }
       }
     } else {
       if (activeId !== "NEW") {
         setActiveId(null);
+        setActiveConversationInStore(null);
       }
     }
   }, [activeTab, displayedConversations, activeId]);
+
+  // Sync activeId → chatStore so useChatSocket emits conversation:join/leave
+  useEffect(() => {
+    setActiveConversationInStore(activeId !== "NEW" ? activeId : null);
+  }, [activeId, setActiveConversationInStore]);
 
   // Find currently active conversation
   const activeConversation = displayedConversations.find((c) => c.id === activeId);

@@ -30,9 +30,11 @@ export function useProviderNotifications() {
   const query = useQuery({
     queryKey: QUERY_KEY,
     queryFn: () => getNotifications({ page: 1, limit: 20 }),
-    staleTime: 1000 * 60, // 1 minute
-    refetchInterval: 10000, // Poll every 10 seconds to enable real-time unlocking
-    retry: false,          // Don't retry on error — fallback is handled in the API layer
+    staleTime: 1000 * 60,       // 1 minute
+    // TODO: Replace with WebSocket event (e.g. 'notification:new') when backend emits it
+    refetchInterval: 180000,    // Fallback poll every 3 min — WS handles real-time
+    refetchOnWindowFocus: true, // Refresh immediately when user returns to tab
+    retry: false,               // Don't retry on error — fallback is handled in the API layer
   });
 
   const notifications = query.data?.data ?? [];
