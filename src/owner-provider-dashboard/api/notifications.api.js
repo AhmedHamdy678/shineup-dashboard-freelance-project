@@ -14,7 +14,10 @@ import { mockNotifications } from '../mocks/providerNotifications.mock';
 // but does NOT redirect on 401 — lets us fall back to mocks gracefully.
 const notifClient = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || '/api/v1',
-  headers: { 'Content-Type': 'application/json' },
+  headers: { 
+    'Content-Type': 'application/json',
+    'Accept-Language': 'ar'
+  },
   timeout: 8000,
 });
 
