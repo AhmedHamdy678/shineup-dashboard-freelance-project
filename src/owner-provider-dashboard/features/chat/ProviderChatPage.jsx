@@ -1,5 +1,6 @@
 // Trigger Vite watcher rebuild - update 3
 import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import toast from "react-hot-toast";
 import ChatSidebar from "./components/ChatSidebar";
 import ChatWindow from "./components/ChatWindow";
@@ -11,9 +12,10 @@ import { useTeam } from "../team/useTeam";
 import useChatStore from "../../../admin-dashboard/store/chatStore";
 
 export default function ProviderChatPage() {
-  const [activeTab, setActiveTab] = useState("ADMIN"); // "ADMIN" or "TEAM"
+  const location = useLocation();
+  const [activeTab, setActiveTab] = useState(location.state?.tab || "ADMIN"); // "ADMIN" or "TEAM"
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeId, setActiveId] = useState(null);
+  const [activeId, setActiveId] = useState(location.state?.conversationId || null);
   const [currentPage, setCurrentPage] = useState(1);
   const [isTeamModalOpen, setIsTeamModalOpen] = useState(false);
 
@@ -63,13 +65,27 @@ export default function ProviderChatPage() {
     }
   }, [activeTab, displayedConversations, activeId]);
 
+  // Read from location state on mount
+  useEffect(() => {
+    if (location.state?.conversationId) {
+      setActiveId(location.state.conversationId);
+      if (location.state.tab) {
+        setActiveTab(location.state.tab);
+      }
+      
+      // Clear state so a refresh doesn't force re-selecting it if user navigated away
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
+
   // Sync activeId → chatStore so useChatSocket emits conversation:join/leave
   useEffect(() => {
     setActiveConversationInStore(activeId !== "NEW" ? activeId : null);
   }, [activeId, setActiveConversationInStore]);
 
   // Find currently active conversation
-  const activeConversation = displayedConversations.find((c) => c.id === activeId);
+  const activeConversation = displayedConversations.find((c) => c.id === activeId) || 
+    (activeId && activeId !== "NEW" ? { id: activeId, isLoadingFromNotification: true } : undefined);
 
   const { mutate: createConversation, isLoading: isCreating } = useCreateConversation();
   const { mutate: sendMessageMutation, isLoading: isSendingMessage } = useSendMessage();

@@ -292,9 +292,6 @@ export default function AdminChatPage() {
                       <div key={msg.id || Math.random()} className={`flex flex-col max-w-[75%] ${isAdmin ? 'self-end items-end' : 'self-start items-start'}`}>
                         <div className="text-xs text-gray-400 mb-1 mx-1 flex items-center gap-1.5">
                           <span>{isAdmin ? 'أنت' : (msg.sender?.fullName || 'مستخدم')}</span>
-                          <span className="text-[10px] font-normal opacity-80">
-                            {msg.createdAt ? new Date(msg.createdAt).toLocaleDateString('ar-SA', { month: 'short', day: 'numeric', year: 'numeric' }) : ''}
-                          </span>
                         </div>
                         <div 
                           className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed shadow-sm ${

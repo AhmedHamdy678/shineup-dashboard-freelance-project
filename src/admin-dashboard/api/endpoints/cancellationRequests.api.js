@@ -5,7 +5,7 @@ export const approveCancellationRequest = async (cancelBookingId) => {
   return data;
 };
 
-export const rejectCancellationRequest = async (cancelBookingId) => {
-  const { data } = await axiosClient.patch(`/admin/booking-cancellation-requests/${cancelBookingId}/reject`);
+export const rejectCancellationRequest = async ({ id, payload }) => {
+  const { data } = await axiosClient.patch(`/admin/booking-cancellation-requests/${id}/reject`, payload);
   return data;
 };

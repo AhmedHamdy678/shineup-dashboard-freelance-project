@@ -327,9 +327,6 @@ export default function AdminSupportThread({ selectedConversation, onConversatio
                      <div className={`max-w-[75%] sm:max-w-[65%] flex flex-col ${isAdmin ? 'items-start' : 'items-end'}`}>
                        <span className="text-[10px] text-gray-500 mb-1 px-1 font-medium flex items-center gap-1.5">
                          <span>{msg.sender?.fullName || msg.sender?.name || (isAdmin ? 'أنت' : 'مزود الخدمة')}</span>
-                         <span className="text-gray-400 font-normal">
-                           {msg.createdAt ? formatDate(msg.createdAt, false) : ''}
-                         </span>
                        </span>
                        <div className={`relative px-4 py-2.5 rounded-2xl shadow-sm text-sm ${
                          isAdmin 

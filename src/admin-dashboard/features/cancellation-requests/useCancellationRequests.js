@@ -35,7 +35,7 @@ export const useRejectCancellationRequest = () => {
     mutationFn: rejectCancellationRequest,
     onSuccess: (_, variables) => {
       toast.success('تم رفض طلب الإلغاء بنجاح');
-      queryClient.invalidateQueries({ queryKey: ['admin-cancellation-request', variables] });
+      queryClient.invalidateQueries({ queryKey: ['admin-cancellation-request', variables.id] });
       queryClient.invalidateQueries({ queryKey: ['admin-cancellation-requests'] });
     },
     onError: (error) => {

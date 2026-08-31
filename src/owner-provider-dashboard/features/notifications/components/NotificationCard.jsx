@@ -84,6 +84,13 @@ export default function NotificationCard({ notification, onDelete }) {
       return;
     }
 
+    const conversationId =
+      notification.data?.conversationId ||
+      notification.data?.chatId ||
+      notification.metadata?.conversationId ||
+      notification.metadata?.chatId ||
+      notification.entityId;
+
     switch (type) {
       case 'REVIEW_RECEIVED': navigate('/provider/reviews'); break;
       case 'BOOKING_CONFIRMED':
@@ -94,7 +101,7 @@ export default function NotificationCard({ notification, onDelete }) {
       default:
         // Fallback checks for title/body content
         if (title?.includes('دعم') || body?.includes('رسالة')) {
-          navigate('/provider/chat');
+          navigate('/provider/chat', conversationId ? { state: { conversationId, tab: 'ADMIN' } } : undefined);
         }
         break;
     }
