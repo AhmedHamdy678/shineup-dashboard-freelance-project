@@ -336,7 +336,7 @@ const translateUi = (value) =>
     : value;
 const translateNode = (node) =>
   Array.isArray(node)
-    ? node.map(translateNode)
+    ? Children.map(node, translateNode)
     : typeof node === "string"
       ? translateUi(node)
       : isValidElement(node)

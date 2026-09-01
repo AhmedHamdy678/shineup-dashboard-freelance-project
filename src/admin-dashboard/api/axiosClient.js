@@ -31,6 +31,10 @@ axiosClient.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+  
+  // Enforce Arabic language globally on every request
+  config.headers["Accept-Language"] = "ar";
+  
   return config;
 });
 

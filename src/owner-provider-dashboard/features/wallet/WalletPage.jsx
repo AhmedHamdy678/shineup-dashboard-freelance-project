@@ -87,7 +87,14 @@ export default function WalletPage() {
 
   const handleWithdrawalSubmit = (e) => {
     e.preventDefault();
-    const amountMinor = Math.round(parseFloat(withdrawalForm.amount) * 100);
+    const amountFloat = parseFloat(withdrawalForm.amount);
+    
+    if (!amountFloat || amountFloat < 100) {
+      toast.error('الحد الأدنى للسحب هو 100 ريال');
+      return;
+    }
+
+    const amountMinor = Math.round(amountFloat * 100);
     
     requestWithdrawMutation.mutate(
       {
@@ -487,7 +494,7 @@ export default function WalletPage() {
                 <input
                   type="number"
                   required
-                  min="1"
+                  min="100"
                   max={maxWithdrawable}
                   step="0.01"
                   dir="ltr"
@@ -498,9 +505,16 @@ export default function WalletPage() {
                 />
                 <span className="absolute right-3 top-2.5 text-gray-500 font-medium">SAR</span>
               </div>
-              <div className="mt-2 flex items-center gap-1.5 text-sm text-gray-500 bg-gray-50 p-2 rounded-md border border-gray-100">
-                <AlertCircle className="w-4 h-4 text-emerald-600" />
-                <span>الحد الأقصى المسموح سحبه: <span className="font-semibold text-gray-900">{formatCurrency(wallet.withdrawableBalanceMinor)}</span></span>
+              <div className="mt-2 flex flex-col gap-1.5">
+                <div className="flex items-center gap-1.5 text-sm text-gray-500 bg-gray-50 p-2 rounded-md border border-gray-100">
+                  <AlertCircle className="w-4 h-4 text-emerald-600" />
+                  <span>الحد الأقصى المسموح سحبه: <span className="font-semibold text-gray-900">{formatCurrency(wallet.withdrawableBalanceMinor)}</span></span>
+                </div>
+                {withdrawalForm.amount && parseFloat(withdrawalForm.amount) < 100 ? (
+                  <div className="text-sm text-red-600 font-medium">الحد الأدنى للسحب هو 100 ر.س</div>
+                ) : (
+                  <div className="text-sm text-gray-500">الحد الأدنى للسحب هو 100 ر.س</div>
+                )}
               </div>
             </div>
 
@@ -549,7 +563,7 @@ export default function WalletPage() {
               </button>
               <button
                 type="submit"
-                disabled={requestWithdrawMutation.isPending || parseFloat(withdrawalForm.amount) <= 0 || parseFloat(withdrawalForm.amount) > maxWithdrawable || verifiedPayoutMethods.length === 0}
+                disabled={requestWithdrawMutation.isPending || !withdrawalForm.amount || parseFloat(withdrawalForm.amount) < 100 || parseFloat(withdrawalForm.amount) > maxWithdrawable || verifiedPayoutMethods.length === 0}
                 className="flex-1 py-2 text-sm font-medium text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 disabled:opacity-50 transition-colors"
               >
                 {requestWithdrawMutation.isPending ? 'جاري التقديم...' : 'تأكيد السحب'}
