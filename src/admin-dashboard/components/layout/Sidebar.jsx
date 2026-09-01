@@ -5,6 +5,12 @@ import useAuth from '../../hooks/useAuth';
 
 export default function Sidebar({ isMobileMenuOpen, setIsMobileMenuOpen }) {
   const { logout, user } = useAuth();
+  const roleNames = (user?.roles || []).map((role) => (typeof role === 'string' ? role : role?.name)?.toLowerCase());
+  const directRole = (user?.role || '').toLowerCase();
+  const permissions = user?.permissions || user?.permissionNames || [];
+  const permissionNames = permissions.map((permission) => (typeof permission === 'string' ? permission : permission?.name)).filter(Boolean);
+  const canManageProviders = ['superadmin', 'super_admin', 'platform'].includes(directRole) || roleNames.some((role) => ['superadmin', 'super_admin', 'platform'].includes(role)) || permissionNames.includes('admin.providers.management.read');
+  const visibleGeneralNav = generalNav.filter((item) => item.path !== '/admin/provider-management' || canManageProviders);
 
   return (
     <aside className={`fixed top-0 ltr:left-0 rtl:right-0 h-screen w-60 bg-gray-900 text-white flex flex-col z-50 transition-transform duration-300 ease-in-out lg:translate-x-0 lg:ltr:translate-x-0 lg:rtl:translate-x-0 ${isMobileMenuOpen ? 'translate-x-0' : 'ltr:-translate-x-full rtl:translate-x-full'}`}>
@@ -14,7 +20,7 @@ export default function Sidebar({ isMobileMenuOpen, setIsMobileMenuOpen }) {
 
       <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
         <p className="text-xs text-gray-500 uppercase tracking-wider px-3 mb-2">عام</p>
-        {generalNav.map((item) => {
+        {visibleGeneralNav.map((item) => {
           const Icon = item.icon;
           return (
             <NavLink
