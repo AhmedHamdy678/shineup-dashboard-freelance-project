@@ -99,7 +99,7 @@ export default function ChatSidebar({
             <p className="text-sm text-gray-500 font-medium mb-3">لا توجد محادثات مطابقة</p>
           </div>
         ) : (
-          conversations.map((conv) => {
+          Array.from(new Map(conversations.map(c => [c.id, c])).values()).map((conv) => {
             const isActive = conv.id === activeId;
             let hasUnread = false;
             let chatName = "";

@@ -25,3 +25,27 @@ export const logout = async () => {
   const { data } = await axiosClient.post('/auth/logout');
   return data;
 };
+
+/** POST /auth/password/forgot — request OTP for password reset. */
+export const forgotPassword = async (identifier) => {
+  const { data } = await axiosClient.post('/auth/password/forgot', { identifier });
+  return data;
+};
+
+/** POST /auth/password/reset — reset password using OTP code. */
+export const resetPassword = async ({ identifier, code, newPassword }) => {
+  const { data } = await axiosClient.post('/auth/password/reset', {
+    identifier,
+    code,
+    newPassword,
+  });
+  return data;
+};
+
+/** POST /auth/otp/verify — verify a one-time code for a given userId. */
+export const verifyOtp = async ({ userId, code }) => {
+  const { data } = await axiosClient.post('/auth/otp/verify', { userId, code });
+  return data;
+};
+
+

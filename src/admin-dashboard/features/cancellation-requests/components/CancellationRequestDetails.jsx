@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowRight, Calendar, FileText, AlertCircle, Ban, Copy, Check, X } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -8,7 +8,18 @@ import { useApproveCancellationRequest, useRejectCancellationRequest } from '../
 
 export default function CancellationRequestDetails({ requestId, onBack }) {
   const { mutate: approveRequest, isPending: isApproving } = useApproveCancellationRequest();
-  const { mutate: rejectRequest, isPending: isRejecting } = useRejectCancellationRequest();
+  const { mutate: rejectRequest, isPending: isRejecting, isSuccess: isRejectSuccess } = useRejectCancellationRequest();
+
+  const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
+  const [rejectReason, setRejectReason] = useState("");
+
+  // Close modal and reset on success
+  useEffect(() => {
+    if (isRejectSuccess) {
+      setIsRejectModalOpen(false);
+      setRejectReason("");
+    }
+  }, [isRejectSuccess]);
 
   const { data: responseData, isLoading, isError } = useQuery({
     queryKey: ['admin-cancellation-request', requestId],
@@ -33,9 +44,12 @@ export default function CancellationRequestDetails({ requestId, onBack }) {
   };
 
   const handleReject = () => {
-    if (window.confirm("هل أنت متأكد من رفض طلب إلغاء هذا الحجز؟")) {
-      rejectRequest(requestId);
-    }
+    setIsRejectModalOpen(true);
+  };
+
+  const confirmReject = () => {
+    if (!rejectReason.trim()) return;
+    rejectRequest({ id: requestId, payload: { providerDecisionReason: rejectReason.trim() } });
   };
 
   const getStatusBadge = (status) => {
@@ -239,6 +253,56 @@ export default function CancellationRequestDetails({ requestId, onBack }) {
             )}
             موافقة على الإلغاء
           </button>
+        </div>
+      )}
+
+      {/* Reject Modal */}
+      {isRejectModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden" dir="rtl">
+            <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-3">
+              <div className="w-10 h-10 bg-red-50 text-red-600 rounded-full flex items-center justify-center shrink-0">
+                <Ban className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-gray-900">سبب رفض الإلغاء</h3>
+                <p className="text-sm text-gray-500">يرجى توضيح سبب الرفض لمزود الخدمة أو العميل</p>
+              </div>
+            </div>
+            <div className="p-6">
+              <textarea
+                value={rejectReason}
+                onChange={(e) => setRejectReason(e.target.value)}
+                maxLength={100}
+                placeholder="اكتب سبب الرفض هنا..."
+                className="w-full border border-gray-200 rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 min-h-[100px] resize-y"
+              />
+              <div className="flex justify-between items-center mt-2 text-xs text-gray-400">
+                <span>يجب ألا يتجاوز السبب 100 حرف</span>
+                <span>{rejectReason.length}/100</span>
+              </div>
+            </div>
+            <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-end gap-3">
+              <button
+                onClick={() => {
+                  setIsRejectModalOpen(false);
+                  setRejectReason("");
+                }}
+                disabled={isRejecting}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50"
+              >
+                إلغاء
+              </button>
+              <button
+                onClick={confirmReject}
+                disabled={isRejecting || !rejectReason.trim()}
+                className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                {isRejecting && <span className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></span>}
+                تأكيد الرفض
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

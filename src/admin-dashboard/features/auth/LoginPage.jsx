@@ -54,7 +54,6 @@ export default function LoginPage() {
       if (!isAdmin && !isProvider) {
         const detectedRoles = roleNames.length > 0 ? roleNames.join(', ') : (directRole || 'بدون صلاحية');
         setError(`عذراً، الصلاحيات الحالية (${detectedRoles}) غير كافية للدخول إلى هذه اللوحة.`);
-        console.log("Rejected user data:", user);
         setLoading(false);
         return;
       }
@@ -120,8 +119,7 @@ export default function LoginPage() {
                   كلمة المرور
                 </label>
                 <Link
-                  to="#"
-                  onClick={(e) => { e.preventDefault(); alert('سيتم تفعيل هذه الميزة قريباً'); }}
+                  to="/forgot-password"
                   className="text-xs font-semibold text-blue-600 hover:text-blue-700 transition hover:underline"
                 >
                   نسيت كلمة المرور؟

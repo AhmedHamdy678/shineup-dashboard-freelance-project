@@ -44,7 +44,6 @@ export default function ProviderLoginPage() {
       if (!hasAccess) {
         const detectedRoles = roleNames.length > 0 ? roleNames.join(', ') : (directRole || 'بدون صلاحية');
         setError(`عذراً، الصلاحيات الحالية (${detectedRoles}) غير كافية للدخول. الرجاء التواصل مع الدعم.`);
-        console.log("Rejected user data:", user);
         setLoading(false);
         return;
       }

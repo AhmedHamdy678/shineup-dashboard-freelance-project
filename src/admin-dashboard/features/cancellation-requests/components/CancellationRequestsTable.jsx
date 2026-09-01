@@ -75,7 +75,6 @@ export default function CancellationRequestsTable({ items, onViewDetails }) {
               <td className="px-6 py-4 text-center">
                 <button
                   onClick={() => {
-                    console.log(item.id);
                     if (onViewDetails) onViewDetails(item.id);
                   }}
                   className="px-4 py-1.5 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition"

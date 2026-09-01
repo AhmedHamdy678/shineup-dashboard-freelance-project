@@ -30,8 +30,8 @@ export function useProviderConversations(type = 'PROVIDER_SUPPORT', page = 1, li
       }
       return response;
     },
-    staleTime: 1000 * 30, // 30 seconds
-    keepPreviousData: true, // Keep old data while fetching new page
+    staleTime: 1000 * 60, // 1 minute — WebSocket handles live updates
+    keepPreviousData: true,
   });
 
   const conversations = query.data?.items || query.data?.conversations || query.data?.data || (Array.isArray(query.data) ? query.data : []);
@@ -75,10 +75,16 @@ export function useCreateConversation() {
         });
 
         // Pre-seed the messages cache so the ChatWindow opens instantly
+        // Uses InfiniteData shape { pages: [], pageParams: [] } to match useInfiniteQuery
         queryClient.setQueryData(['conversation-messages', convData.id], {
-          items: [msgData],
-          conversation: newConv,
-          pagination: { page: 1, limit: 30, total: 1 }
+          pages: [
+            {
+              items: [msgData],
+              conversation: newConv,
+              pagination: { page: 1, limit: 30, total: 1, totalPages: 1 }
+            }
+          ],
+          pageParams: [1]
         });
       }
 
@@ -97,19 +103,39 @@ export function useSendMessage() {
   return useMutation({
     mutationFn: sendMessage,
     onSuccess: (data, variables) => {
-      // 1. Optimistically update the specific conversation's messages list
+      // The backend API might wrap the message in a 'message' object
+      const actualMessage = data?.message ? data.message : data;
+
+      // 1. Optimistically append the sent message to the chat window cache.
+      //    Must mutate the InfiniteData { pages } shape.
       queryClient.setQueryData(['conversation-messages', variables.conversationId], (oldData) => {
-        if (!oldData) return oldData;
+        if (!oldData || !oldData.pages || oldData.pages.length === 0) return oldData;
+        
+        // Deduplicate
+        const exists = oldData.pages.some(page => 
+          (page.items || page.data || []).some(m => m.id === actualMessage.id)
+        );
+        if (exists) return oldData;
+        
+        // Append to the last page's items
+        const newPages = [...oldData.pages];
+        const lastPageIndex = newPages.length - 1;
+        const lastPage = newPages[lastPageIndex];
+        const lastPageItems = lastPage.items || lastPage.data || [];
+        
+        newPages[lastPageIndex] = {
+          ...lastPage,
+          items: [...lastPageItems, actualMessage]
+        };
+        
         return {
           ...oldData,
-          items: [...oldData.items, data]
+          pages: newPages
         };
       });
 
-      // 2. We don't know the type here directly, so we'll just invalidate all conversation lists
-      // so they refetch and show the updated latest message.
+      // 2. Refresh sidebar conversation list so the latest-message preview updates.
       queryClient.invalidateQueries({ queryKey: ['provider-conversations'] });
-      queryClient.invalidateQueries({ queryKey: ['conversation-messages', variables.conversationId] });
     },
   });
 }

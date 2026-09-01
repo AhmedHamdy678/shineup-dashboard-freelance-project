@@ -4,6 +4,7 @@ export const generalNav = [
   { label: "لوحة التحكم", icon: LayoutDashboard, path: "/admin" },
   { label: "الملخص المالي", icon: BarChart3, path: "/admin/finance-overview" },
   { label: "مقدمو الخدمات", icon: Store, path: "/admin/providers" },
+  { label: "إدارة مقدمي الخدمة", icon: Store, path: "/admin/provider-management" },
   { label: "العملاء", icon: Users, path: "/admin/customers" },
   { label: "الحجوزات", icon: Calendar, path: "/admin/bookings" },
   { label: "التقييمات", icon: Star, path: "/admin/reviews" },

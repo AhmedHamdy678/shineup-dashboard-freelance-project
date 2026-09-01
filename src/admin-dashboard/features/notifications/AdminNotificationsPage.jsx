@@ -175,13 +175,43 @@ export default function AdminNotificationsPage() {
                   if (isUnread) {
                     markAsReadMutation.mutate(notif.id);
                   }
+                  
+                  if (notif.link) {
+                    navigate(notif.link);
+                    return;
+                  }
+
+                  // Determine whether this notification is about a provider or customer
+                  const isProviderNotif = 
+                    notif.type === 'PROVIDER_SUPPORT_MESSAGE_RECEIVED' ||
+                    conversationType === 'PROVIDER_SUPPORT' ||
+                    notif.title?.includes('مزوّد') ||
+                    notif.title?.includes('مزود') ||
+                    notif.body?.includes('مزوّد') ||
+                    notif.body?.includes('مزود');
+
+                  const tab = isProviderNotif ? 'PROVIDER' : 'CUSTOMER';
+
                   if (conversationId) {
                     navigate('/admin/chat', { 
-                      state: { 
-                        conversationId, 
-                        tab: conversationType === 'PROVIDER_SUPPORT' ? 'PROVIDER' : 'CUSTOMER' 
-                      } 
+                      state: { conversationId, tab } 
                     });
+                  } else if (
+                    notif.type === 'PROVIDER_SUPPORT_MESSAGE_RECEIVED' ||
+                    notif.type === 'SUPPORT_MESSAGE_RECEIVED' ||
+                    notif.title?.includes('دعم') ||
+                    notif.body?.includes('رسالة')
+                  ) {
+                    navigate('/admin/chat', { state: { tab } });
+                  } else if (
+                    notif.type === 'CANCELLATION_REQUEST_ESCALATED' ||
+                    notif.type === 'CANCELLATION_REQUEST' ||
+                    notif.title?.includes('إلغاء') ||
+                    notif.body?.includes('إلغاء')
+                  ) {
+                    const id = notif.referenceId || notif.entityId || notif.data?.requestId || notif.data?.id;
+                    const url = id ? `/admin/cancellation-requests?id=${id}` : '/admin/cancellation-requests';
+                    navigate(url);
                   }
                 }}
               >

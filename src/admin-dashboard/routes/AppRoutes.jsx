@@ -7,8 +7,10 @@ import ProviderLayout from "../../owner-provider-dashboard/components/layout/Pro
 import ProviderProtectedRoute from "../../owner-provider-dashboard/routes/ProviderProtectedRoute";
 
 const LoginPage = lazy(() => import("../features/auth/LoginPage"));
+const ForgotPasswordPage = lazy(() => import("../features/auth/ForgotPasswordPage"));
 const DashboardPage = lazy(() => import("../features/dashboard/DashboardPage"));
 const ProvidersPage = lazy(() => import("../features/providers/ProvidersPage"));
+const ProviderManagementPage = lazy(() => import("../features/provider-management/ProviderManagementPage"));
 const ProviderReviewPage = lazy(() => import("../features/providers/ProviderReviewPage"));
 const CustomersPage = lazy(() => import("../features/customers/CustomersPage"));
 const CustomerDetailsPage = lazy(() => import("../features/customers/CustomerDetailsPage"));
@@ -62,6 +64,7 @@ export default function AppRoutes() {
     <Routes>
       <Route path="/" element={<Navigate to="/admin" replace />} />
       <Route path="/login" element={<SuspenseWrapper><LoginPage /></SuspenseWrapper>} />
+      <Route path="/forgot-password" element={<SuspenseWrapper><ForgotPasswordPage /></SuspenseWrapper>} />
       <Route path="/provider/login" element={<SuspenseWrapper><ProviderLoginPage /></SuspenseWrapper>} />
       <Route path="/provider/register" element={<SuspenseWrapper><ProviderRegisterPage /></SuspenseWrapper>} />
       
@@ -76,6 +79,9 @@ export default function AppRoutes() {
         <Route path="/admin" element={<DashboardLayout />}>
           <Route index element={<SuspenseWrapper><DashboardPage /></SuspenseWrapper>} />
           <Route path="providers" element={<SuspenseWrapper><ProvidersPage /></SuspenseWrapper>} />
+          <Route path="provider-management" element={<SuspenseWrapper><ProviderManagementPage /></SuspenseWrapper>} />
+          <Route path="provider-management/registered/:ownerUserId" element={<SuspenseWrapper><ProviderManagementPage /></SuspenseWrapper>} />
+          <Route path="provider-management/:providerId" element={<SuspenseWrapper><ProviderManagementPage /></SuspenseWrapper>} />
           <Route path="providers/pending/:providerId" element={<SuspenseWrapper><ProviderReviewPage /></SuspenseWrapper>} />
           <Route path="providers/:providerId" element={<SuspenseWrapper><ProviderReviewPage /></SuspenseWrapper>} />
           <Route path="customers" element={<SuspenseWrapper><CustomersPage /></SuspenseWrapper>} />

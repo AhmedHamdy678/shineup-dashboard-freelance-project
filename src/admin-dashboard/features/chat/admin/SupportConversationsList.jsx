@@ -7,7 +7,9 @@ export default function SupportConversationsList() {
   const { data, isLoading, isError } = useQuery({
     queryKey: ['support-conversations'],
     queryFn: getSupportConversations,
-    refetchInterval: 15000 // Poll every 15s to keep it fresh
+    // TODO: Replace with WebSocket event \u2014 useChatSocket already invalidates this query on new_message
+    refetchInterval: 180000,    // Fallback poll every 3 min \u2014 WS handles real-time updates
+    refetchOnWindowFocus: true, // Refresh immediately when admin returns to tab
   });
 
   const activeId = useChatStore((s) => s.activeConversationId);

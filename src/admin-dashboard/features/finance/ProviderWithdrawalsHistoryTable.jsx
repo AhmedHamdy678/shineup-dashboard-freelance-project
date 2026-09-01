@@ -114,7 +114,7 @@ export default function ProviderWithdrawalsHistoryTable({ providerId }) {
         <Modal title="إيصال التحويل" onClose={() => setSelectedReceiptId(null)} size="lg">
           <div className="flex justify-center p-4">
             <img 
-              src={`https://api.shineupapp.com/api/v1/media/${selectedReceiptId}`} 
+              src={`https://api-dev.shineupapp.tech/api/v1/media/${selectedReceiptId}`} 
               alt="Receipt" 
               className="max-w-full h-auto rounded-lg shadow-sm"
               onError={(e) => { e.target.src = 'https://placehold.co/600x400?text=الصورة+غير+متوفرة' }}

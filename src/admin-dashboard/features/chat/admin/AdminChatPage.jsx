@@ -1,4 +1,5 @@
-import React, { useEffect, useRef, useState, useMemo } from 'react';
+import React, { useEffect, useRef, useState, useMemo, useCallback } from 'react';
+import { useLocation } from 'react-router-dom';
 import SupportConversationsList from './SupportConversationsList';
 import useChatStore from '../../../store/chatStore';
 import useAuthStore from '../../../store/authStore';
@@ -10,14 +11,34 @@ import AdminSupportQueue from '../../support/components/AdminSupportQueue';
 import AdminSupportThread from '../../support/components/AdminSupportThread';
 
 export default function AdminChatPage() {
+  const location = useLocation();
   const activeId = useChatStore((s) => s.activeConversationId);
   const setActiveConversation = useChatStore((s) => s.setActiveConversation);
   const user = useAuthStore((s) => s.user);
-  const [activeTab, setActiveTab] = useState('CUSTOMER'); // 'CUSTOMER' | 'PROVIDER'
+  // Default to CUSTOMER tab; overridden if navigation state includes a tab
+  const [activeTab, setActiveTab] = useState(
+    location.state?.tab === 'PROVIDER' ? 'PROVIDER' : 'CUSTOMER'
+  );
   const [selectedSupportConversation, setSelectedSupportConversation] = useState(null);
   const [inputText, setInputText] = useState('');
   const messagesEndRef = useRef(null);
   const queryClient = useQueryClient();
+
+  // If navigation state includes a conversationId (from notification click),
+  // select that conversation automatically once we are on the right tab.
+  const navConversationId = location.state?.conversationId || null;
+
+  useEffect(() => {
+    const navTab = location.state?.tab;
+    if (navTab) {
+      setActiveTab(navTab === 'PROVIDER' ? 'PROVIDER' : 'CUSTOMER');
+    }
+    if (location.state?.conversationId && activeTab === 'CUSTOMER') {
+      setActiveConversation(location.state.conversationId);
+    }
+    // Only run on mount – intentionally omit location from deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // 1. Fetch metadata (Header)
   const { data: conversationData } = useQuery({
@@ -35,34 +56,120 @@ export default function AdminChatPage() {
     isFetchingNextPage 
   } = useInfiniteQuery({
     queryKey: ['messages', activeId],
-    queryFn: ({ pageParam = 1 }) => getMessageHistory(activeId, pageParam, 30),
+    queryFn: ({ pageParam = null }) => getMessageHistory(activeId, pageParam, 30),
+    initialPageParam: null,
     getNextPageParam: (lastPage) => {
-      const { page, total, limit } = lastPage?.pagination || {};
-      const totalPages = Math.ceil((total || 0) / (limit || 30));
-      return page < totalPages ? page + 1 : undefined;
+      const pagination = lastPage?.pagination || lastPage?.data?.pagination;
+      if (pagination && pagination.nextCursor) {
+        return pagination.nextCursor;
+      }
+      return undefined;
     },
     enabled: !!activeId,
-    refetchInterval: 5000 // Temporary polling
+    staleTime: 1000 * 60, // 1 minute — WebSocket handles live delivery
   });
 
   const displayMessages = useMemo(() => {
     if (!messagesData) return [];
-    const allMessages = messagesData.pages.flatMap((page) => page.items || []);
+    
+    console.log("🔍 [AdminChatPage] RAW messagesData:", messagesData);
+    
+    // Robustly extract the messages array from whatever shape the backend/axios returns
+    const allMessages = messagesData.pages.flatMap((page) => {
+      if (Array.isArray(page)) return page;
+      if (Array.isArray(page?.items)) return page.items;
+      if (Array.isArray(page?.data)) return page.data;
+      if (Array.isArray(page?.data?.items)) return page.data.items;
+      if (Array.isArray(page?.data?.data)) return page.data.data;
+      return [];
+    });
+    
+    console.log("🔍 [AdminChatPage] Extracted allMessages (count):", allMessages.length);
+    
     // Sort chronologically (oldest first, newest at the bottom)
     return allMessages.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
   }, [messagesData]);
+
+  // Observer for Infinite Scroll UP (Load previous messages)
+  const observerTarget = useRef(null);
   
-  // Auto-scroll to bottom
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [displayMessages]);
+    const target = observerTarget.current;
+    if (!target || !hasNextPage || isFetchingNextPage) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          fetchNextPage();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    observer.observe(target);
+    return () => observer.unobserve(target);
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+  
+  // Maintain scroll position when fetching older messages (scrolling UP)
+  // or auto-scroll to bottom when new messages arrive
+  const previousScrollHeight = useRef(0);
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const container = containerRef.current;
+    
+    // If we are at the bottom (or very close), auto-scroll to the new bottom
+    const isAtBottom = container.scrollHeight - container.scrollTop <= container.clientHeight + 100;
+    
+    if (isFetchingNextPage) {
+      // Remember height before old messages are added to the top
+      previousScrollHeight.current = container.scrollHeight;
+    } else if (previousScrollHeight.current > 0) {
+      // Old messages were just added to the top. Adjust scroll position so we don't jump!
+      const newScrollHeight = container.scrollHeight;
+      container.scrollTop += (newScrollHeight - previousScrollHeight.current);
+      previousScrollHeight.current = 0; // Reset
+    } else if (isAtBottom) {
+      // New message added at the bottom, auto-scroll to it
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [displayMessages, isFetchingNextPage]);
 
   // Send message mutation
   const sendMessageMutation = useMutation({
     mutationFn: (body) => sendMessage(activeId, { body }),
-    onSuccess: () => {
+    onSuccess: (data) => {
       setInputText('');
-      queryClient.invalidateQueries({ queryKey: ['messages', activeId] });
+      const actualMessage = data?.message ? data.message : data;
+      
+      // Optimistically append the sent message to the chat window cache
+      queryClient.setQueryData(['messages', activeId], (oldData) => {
+        if (!oldData || !oldData.pages || oldData.pages.length === 0) return oldData;
+        
+        // Deduplicate
+        const exists = oldData.pages.some(page => 
+          (page.items || page.data || []).some(m => m.id === actualMessage.id)
+        );
+        if (exists) return oldData;
+        
+        // Append to the last page's items
+        const newPages = [...oldData.pages];
+        const lastPageIndex = newPages.length - 1;
+        const lastPage = newPages[lastPageIndex];
+        const lastPageItems = lastPage.items || lastPage.data || [];
+        
+        newPages[lastPageIndex] = {
+          ...lastPage,
+          items: [...lastPageItems, actualMessage]
+        };
+        
+        return {
+          ...oldData,
+          pages: newPages
+        };
+      });
+
       queryClient.invalidateQueries({ queryKey: ['support-conversations'] });
       // The auto-scroll hook will trigger automatically when messages array length increases
     },
@@ -123,9 +230,11 @@ export default function AdminChatPage() {
               <SupportConversationsList />
             </div>
           ) : (
-            <AdminSupportQueue 
+          <AdminSupportQueue 
               onSelectConversation={setSelectedSupportConversation} 
               selectedId={selectedSupportConversation?.conversationId}
+              targetConversationId={navConversationId}
+              onAutoSelected={setSelectedSupportConversation}
             />
           )}
         </div>
@@ -151,7 +260,7 @@ export default function AdminChatPage() {
             </div>
             
             {/* Messages Area */}
-            <div className="flex-1 overflow-y-auto p-6 bg-slate-50 flex flex-col gap-4">
+            <div ref={containerRef} className="flex-1 overflow-y-auto p-6 bg-slate-50 flex flex-col gap-4 relative">
               {isMessagesLoading ? (
                 <div className="flex h-full items-center justify-center">
                   <div className="flex items-center gap-2 text-emerald-600">
@@ -165,22 +274,11 @@ export default function AdminChatPage() {
                 </div>
               ) : (
                 <>
-                  {hasNextPage && (
-                    <div className="flex justify-center mb-4">
-                      <button 
-                        onClick={() => fetchNextPage()} 
-                        disabled={isFetchingNextPage}
-                        className="bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 px-4 py-1.5 rounded-full text-xs font-semibold shadow-sm transition-colors flex items-center gap-2"
-                      >
-                        {isFetchingNextPage ? (
-                          <>
-                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                            جاري التحميل...
-                          </>
-                        ) : 'تحميل الرسائل السابقة'}
-                      </button>
-                    </div>
-                  )}
+                  {/* Infinite Scroll Top Observer */}
+                  <div ref={observerTarget} className="h-4 flex justify-center items-center w-full my-2">
+                    {isFetchingNextPage && <Loader2 className="w-5 h-5 animate-spin text-emerald-500" />}
+                  </div>
+                  
                   {displayMessages.map((msg) => {
                     const isAdmin = (user?.id && (msg.sender?.id === user.id || msg.senderUserId === user.id)) || 
                                     msg.sender?.roles?.some(r => r.name?.toLowerCase() === 'admin' || r.name?.toLowerCase() === 'super_admin') ||
@@ -192,8 +290,8 @@ export default function AdminChatPage() {
                     
                     return (
                       <div key={msg.id || Math.random()} className={`flex flex-col max-w-[75%] ${isAdmin ? 'self-end items-end' : 'self-start items-start'}`}>
-                        <div className="text-xs text-gray-400 mb-1 mx-1">
-                          {isAdmin ? 'أنت' : (msg.sender?.fullName || 'مستخدم')}
+                        <div className="text-xs text-gray-400 mb-1 mx-1 flex items-center gap-1.5">
+                          <span>{isAdmin ? 'أنت' : (msg.sender?.fullName || 'مستخدم')}</span>
                         </div>
                         <div 
                           className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed shadow-sm ${

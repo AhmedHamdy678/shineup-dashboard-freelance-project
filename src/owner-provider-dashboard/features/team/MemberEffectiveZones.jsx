@@ -38,7 +38,6 @@ export default function MemberEffectiveZones({ memberId }) {
         let fetchedZones = [];
         const resData = response.data;
         
-        console.log("Effective Zones API Response:", resData);
 
         if (Array.isArray(resData)) {
           fetchedZones = resData;

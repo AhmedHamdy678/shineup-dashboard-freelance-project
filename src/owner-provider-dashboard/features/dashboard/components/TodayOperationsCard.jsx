@@ -52,7 +52,7 @@ export default function TodayOperationsCard({ bookings, members, payments }) {
           </div>
           <div>
             <p className="text-sm text-gray-500 font-medium mb-1">المدفوع اليوم</p>
-            <p className="text-xl font-bold text-gray-900" dir="ltr">{typeof paidToday === 'number' ? `${paidToday.toLocaleString()} ر.س` : paidToday}</p>
+            <p className="text-xl font-bold text-gray-900" dir="ltr">{typeof paidToday === 'number' ? `${(paidToday / 100).toLocaleString()} ر.س` : paidToday}</p>
           </div>
         </div>
       </div>

@@ -54,7 +54,7 @@ export default function DashboardOverviewPage() {
 
   const formatCurrency = (amount) => {
     if (typeof amount !== 'number') return amount || '0 ر.س';
-    return `${amount.toLocaleString()} ر.س`;
+    return `${(amount / 100).toLocaleString()} ر.س`;
   };
 
   return (

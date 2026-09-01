@@ -175,10 +175,10 @@ export default function WithdrawalRequestDetailsPage() {
       {req.status === 'REQUESTED' && !req.provider?.financiallyBlocked && (
          <div className="mt-8 bg-white border-t border-gray-100 p-6 rounded-xl shadow-sm flex items-center justify-end gap-4">
            <button 
-              onClick={() => console.log('Reject clicked')}
-              className="px-6 py-2.5 text-sm font-medium text-red-600 bg-white border border-red-600 hover:bg-red-50 rounded-lg transition-colors"
+              disabled
+              className="px-6 py-2.5 text-sm font-medium text-gray-400 bg-gray-50 border border-gray-200 rounded-lg cursor-not-allowed"
             >
-              رفض الطلب
+              رفض الطلب (قريباً)
             </button>
             <button 
               onClick={() => setIsApproveModalOpen(true)}

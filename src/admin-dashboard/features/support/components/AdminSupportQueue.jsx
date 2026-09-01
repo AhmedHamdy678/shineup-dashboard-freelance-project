@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import axiosClient from '../../../api/axiosClient';
 import { MessageSquare, Clock, CheckCircle2, User, HelpCircle, Loader2 } from 'lucide-react';
@@ -11,7 +11,7 @@ const statusConfig = {
   RESOLVED: { label: 'مغلقة', color: 'bg-gray-100 text-gray-800 border-gray-200' },
 };
 
-export default function AdminSupportQueue({ onSelectConversation, selectedId }) {
+export default function AdminSupportQueue({ onSelectConversation, selectedId, targetConversationId, onAutoSelected }) {
   const [filter, setFilter] = useState('ALL');
 
   const { data, isLoading, isError } = useQuery({
@@ -29,6 +29,16 @@ export default function AdminSupportQueue({ onSelectConversation, selectedId }) 
   });
 
   const conversations = data?.items || [];
+
+  // Auto-select the target conversation (from notification click) once data loads
+  useEffect(() => {
+    if (!targetConversationId || !conversations.length || !onAutoSelected) return;
+    const match = conversations.find((c) => c.conversationId === targetConversationId);
+    if (match) {
+      onAutoSelected(match);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [conversations.length, targetConversationId]);
 
   return (
     <div className="flex flex-col h-full bg-white shrink-0" dir="rtl">

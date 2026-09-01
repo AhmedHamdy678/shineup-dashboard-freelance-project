@@ -59,7 +59,6 @@ export default function ProviderServicesPage() {
       if (editingService) {
         const { serviceId, ...updateData } = formData;
         const payload = { id: editingService.id, ...updateData };
-        console.log('Update payload:', JSON.stringify(payload, null, 2));
         await updateServiceAsync(payload);
         setEditingService(null);
         toast.success("تم تعديل الخدمة بنجاح");
@@ -69,11 +68,7 @@ export default function ProviderServicesPage() {
         toast.success("تم اضافة الخدمة بنجاح");
       }
     } catch (error) {
-      console.error('Failed to save service:', error);
       toast.error(error?.response?.data?.message || "فشل اضافة الخدمة");
-      if (error.response) {
-        console.error('Response body:', JSON.stringify(error.response.data, null, 2));
-      }
     }
   };
 

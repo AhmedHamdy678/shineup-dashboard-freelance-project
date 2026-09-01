@@ -1,5 +1,7 @@
 // Trigger Vite watcher rebuild - update 3
 import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
+import toast from "react-hot-toast";
 import ChatSidebar from "./components/ChatSidebar";
 import ChatWindow from "./components/ChatWindow";
 import NewInternalChatModal from "./components/NewInternalChatModal";
@@ -7,15 +9,18 @@ import { useProviderConversations, useCreateConversation, useSendMessage } from 
 import useProviderAuthStore from "../../store/providerAuthStore";
 import { useDashboardOverview } from "../dashboard/useDashboardOverview";
 import { useTeam } from "../team/useTeam";
+import useChatStore from "../../../admin-dashboard/store/chatStore";
 
 export default function ProviderChatPage() {
-  const [activeTab, setActiveTab] = useState("ADMIN"); // "ADMIN" or "TEAM"
+  const location = useLocation();
+  const [activeTab, setActiveTab] = useState(location.state?.tab || "ADMIN"); // "ADMIN" or "TEAM"
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeId, setActiveId] = useState(null);
+  const [activeId, setActiveId] = useState(location.state?.conversationId || null);
   const [currentPage, setCurrentPage] = useState(1);
   const [isTeamModalOpen, setIsTeamModalOpen] = useState(false);
 
   const { user } = useProviderAuthStore();
+  const setActiveConversationInStore = useChatStore((s) => s.setActiveConversation);
   
   // Fetch dashboard data safely to ensure we have the providerId
   const { data: dashboardData } = useDashboardOverview();
@@ -47,20 +52,40 @@ export default function ProviderChatPage() {
     if (displayedConversations.length > 0) {
       if (activeId && activeId !== "NEW") {
         const exists = displayedConversations.some((c) => c.id === activeId);
-        // Reset to null if the currently selected conversation no longer exists
         if (!exists) {
           setActiveId(null);
+          setActiveConversationInStore(null);
         }
       }
     } else {
       if (activeId !== "NEW") {
         setActiveId(null);
+        setActiveConversationInStore(null);
       }
     }
   }, [activeTab, displayedConversations, activeId]);
 
+  // Read from location state on mount
+  useEffect(() => {
+    if (location.state?.conversationId) {
+      setActiveId(location.state.conversationId);
+      if (location.state.tab) {
+        setActiveTab(location.state.tab);
+      }
+      
+      // Clear state so a refresh doesn't force re-selecting it if user navigated away
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
+
+  // Sync activeId → chatStore so useChatSocket emits conversation:join/leave
+  useEffect(() => {
+    setActiveConversationInStore(activeId !== "NEW" ? activeId : null);
+  }, [activeId, setActiveConversationInStore]);
+
   // Find currently active conversation
-  const activeConversation = displayedConversations.find((c) => c.id === activeId);
+  const activeConversation = displayedConversations.find((c) => c.id === activeId) || 
+    (activeId && activeId !== "NEW" ? { id: activeId, isLoadingFromNotification: true } : undefined);
 
   const { mutate: createConversation, isLoading: isCreating } = useCreateConversation();
   const { mutate: sendMessageMutation, isLoading: isSendingMessage } = useSendMessage();
@@ -69,7 +94,7 @@ export default function ProviderChatPage() {
   const handleSendMessage = (convId, text, onSuccessCallback) => {
     if (convId === "NEW") {
       if (!safeProviderId) {
-        alert("خطأ: تعذر العثور على المعرف الخاص بمزود الخدمة (providerId). جاري محاولة تحميل البيانات...");
+        toast.error('تعذر العثور على معرف مزود الخدمة. يرجى إعادة تحميل الصفحة.');
         return;
       }
       
@@ -89,12 +114,12 @@ export default function ProviderChatPage() {
               setActiveId(createdConv.id);
               if (onSuccessCallback) onSuccessCallback();
             } else {
-              alert("تم الإنشاء بنجاح لكن لم يتم العثور على ID المحادثة في الـ Response:\n" + JSON.stringify(response));
+              toast.error('تم الإنشاء لكن لم يتم استلام معرف المحادثة. يرجى تحديث الصفحة.');
             }
           },
           onError: (err) => {
             console.error("Failed to create conversation", err);
-            alert("فشل إنشاء المحادثة: " + (err?.response?.data?.message || err.message));
+            toast.error(err?.response?.data?.message || 'فشل إنشاء المحادثة');
           }
         }
       );
@@ -108,7 +133,7 @@ export default function ProviderChatPage() {
           },
           onError: (err) => {
             console.error("Failed to send message", err);
-            alert("فشل إرسال الرسالة: " + (err?.response?.data?.message || err.message));
+            toast.error(err?.response?.data?.message || 'فشل إرسال الرسالة');
           }
         }
       );

@@ -35,15 +35,16 @@ export async function addMember(payload) {
     phone: payload.phone,
     password: payload.password,
   });
-  const m = data.member;
+  // Bug #7 fix: gracefully handle both { member: {...} } and flat object responses
+  const m = data.member ?? data;
   return {
-    id: m.id,
-    name: m.displayName || m.user?.fullName,
-    email: m.user?.email || '',
-    phone: m.user?.phone || '',
-    status: m.statusCode,
-    userIsActive: m.user?.isActive,
-    joinedAt: m.joinedAt,
+    id: m?.id,
+    name: m?.displayName || m?.user?.fullName,
+    email: m?.user?.email || '',
+    phone: m?.user?.phone || '',
+    status: m?.statusCode,
+    userIsActive: m?.user?.isActive,
+    joinedAt: m?.joinedAt,
   };
 }
 

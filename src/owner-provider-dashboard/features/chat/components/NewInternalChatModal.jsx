@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { X, Send, Loader2 } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { useCreateConversation } from '../useProviderChat';
 
 export default function NewInternalChatModal({ 
@@ -39,7 +40,7 @@ export default function NewInternalChatModal({
         },
         onError: (err) => {
           console.error("Failed to create internal conversation", err);
-          alert("فشل إنشاء المحادثة: " + (err?.response?.data?.message || err.message));
+          toast.error(err?.response?.data?.message || 'فشل إنشاء المحادثة');
         }
       }
     );

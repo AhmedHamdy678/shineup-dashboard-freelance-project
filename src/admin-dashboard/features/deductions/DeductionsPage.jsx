@@ -46,7 +46,6 @@ export default function DeductionsPage() {
     try {
       setLoading(true);
       const res = await axiosClient.get('/admin/platform-deductions');
-      // console.log("Fetched Rules:", res.data);
       const fetchedRules = res.data?.items || res.data?.data || [];
       setRules(fetchedRules);
       
