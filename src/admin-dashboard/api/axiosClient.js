@@ -4,48 +4,79 @@
  * - Attaches the stored auth token on every request via an interceptor.
  * - On 401 responses, clears the stored session and redirects to /login.
  */
-import axios from 'axios';
+import axios from "axios";
 
 const axiosClient = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || '/api/v1',
-  headers: { 
-    'Content-Type': 'application/json',
-    'Accept-Language': 'ar'
+  baseURL: import.meta.env.VITE_API_BASE_URL || "/api/v1",
+  headers: {
+    "Content-Type": "application/json",
+    "Accept-Language": "ar",
   },
   timeout: 15000,
 });
 
 axiosClient.interceptors.request.use((config) => {
-  const token = localStorage.getItem('auth_token');
+  // Axios serializes FormData as JSON when a JSON content type is forced.
+  // Remove only that request header and let the browser add multipart/form-data
+  // with the correct boundary.
+  if (typeof FormData !== "undefined" && config.data instanceof FormData) {
+    if (typeof config.headers?.delete === "function") {
+      config.headers.delete("Content-Type");
+    } else if (config.headers) {
+      delete config.headers["Content-Type"];
+      delete config.headers["content-type"];
+    }
+  }
+  const token = localStorage.getItem("auth_token");
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
 });
 
+/** Returns the first readable message from supported Backend validation shapes. */
+export function extractBackendValidationMessage(errors) {
+  if (!errors) return "";
+  const entries = Array.isArray(errors) ? errors : Object.values(errors);
+  for (const entry of entries) {
+    if (typeof entry === "string" && entry.trim()) return entry;
+    if (Array.isArray(entry)) {
+      const message = entry.find(
+        (value) => typeof value === "string" && value.trim(),
+      );
+      if (message) return message;
+      continue;
+    }
+    const message = entry?.messages?.find?.(
+      (value) => typeof value === "string" && value.trim(),
+    );
+    if (message) return message;
+    if (typeof entry?.message === "string" && entry.message.trim()) {
+      return entry.message;
+    }
+  }
+  return "";
+}
+
 axiosClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    const isLoginRequest = error.config?.url?.includes('/auth/login');
+    const isLoginRequest = error.config?.url?.includes("/auth/login");
 
     if (error.response?.status === 401 && !isLoginRequest) {
-      localStorage.removeItem('auth_token');
-      window.location.href = '/login';
+      localStorage.removeItem("auth_token");
+      window.location.href = "/login";
     }
 
     if (error.response?.status === 400 && error.response?.data) {
       const data = error.response.data;
-      let detailedErrorString = '';
+      let detailedErrorString = extractBackendValidationMessage(data.errors);
 
-      if (data.errors) {
-        const extracted = Object.values(data.errors).flat();
-        if (extracted.length > 0) {
-          detailedErrorString = extracted.join(' | ');
-        }
-      } else if (data.error) {
-        detailedErrorString = typeof data.error === 'string' 
-          ? data.error 
-          : JSON.stringify(data.error);
+      if (!detailedErrorString && data.error) {
+        detailedErrorString =
+          typeof data.error === "string"
+            ? data.error
+            : JSON.stringify(data.error);
       }
 
       if (detailedErrorString) {
