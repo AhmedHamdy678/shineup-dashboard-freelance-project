@@ -1,5 +1,6 @@
-import { useState } from 'react';
-import { Plus, Pencil, Trash2, LayoutList, AlertTriangle } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Plus, Pencil, Trash2, LayoutList, AlertTriangle, GripVertical, Info } from 'lucide-react';
+import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { useServices, useServiceMutations } from './useServices';
 import { useCategories } from '../categories/useCategories';
 import ServiceModal from './ServiceModal';
@@ -8,16 +9,44 @@ import Modal from '../../../shared/components/ui/Modal';
 import toast from 'react-hot-toast';
 
 export default function ServicesPage() {
-  const { data: services = [], isLoading } = useServices();
-  const { data: categories = [] } = useCategories();
-  const { create, update, remove } = useServiceMutations();
+  const { data: servicesData, isLoading } = useServices();
+  const { data: categoriesData } = useCategories();
+
+  const services = servicesData || [];
+  const categories = categoriesData || [];
+  const { create, update, remove, reorder } = useServiceMutations();
 
   const [modal, setModal] = useState(null);
   const [serviceToDelete, setServiceToDelete] = useState(null);
   const [filterCategoryId, setFilterCategoryId] = useState('all');
+  const [localServices, setLocalServices] = useState([]);
 
   const filtered = services
     .filter((s) => filterCategoryId === 'all' || s.categoryId === filterCategoryId);
+
+  useEffect(() => {
+    if (servicesData) {
+      const filteredData = servicesData.filter((s) => filterCategoryId === 'all' || s.categoryId === filterCategoryId);
+      setLocalServices([...filteredData].sort((a, b) => (a.orderSort || 0) - (b.orderSort || 0)));
+    }
+  }, [servicesData, filterCategoryId]);
+
+  const onDragEnd = (result) => {
+    if (!result.destination || filterCategoryId === 'all') return;
+    
+    const items = Array.from(localServices);
+    const [reorderedItem] = items.splice(result.source.index, 1);
+    items.splice(result.destination.index, 0, reorderedItem);
+    
+    setLocalServices(items);
+    
+    const payloadItems = items.map((item, index) => ({
+      id: item.id,
+      orderSort: index + 1
+    }));
+    
+    reorder.mutate({ categoryId: filterCategoryId, items: payloadItems });
+  };
 
   const handleSubmit = (form) => {
     if (modal === 'add') {
@@ -96,6 +125,12 @@ export default function ServicesPage() {
       </div>
 
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+        {filterCategoryId === 'all' && filtered.length > 0 && (
+          <div className="bg-blue-50 border-b border-blue-100 p-3 flex items-center gap-2 text-blue-700 text-sm">
+            <Info size={16} />
+            <span>لترتيب الخدمات، يرجى اختيار قسم محدد من الأعلى</span>
+          </div>
+        )}
         {filtered.length === 0 ? (
           <div className="py-16 text-center">
             <LayoutList size={40} className="text-gray-300 mx-auto mb-4" />
@@ -106,6 +141,7 @@ export default function ServicesPage() {
             <table className="w-full">
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-100 text-sm text-gray-600">
+                  <th className="w-10 px-4 py-4 text-center"></th>
                   <th className="px-6 py-4 text-start font-semibold w-12">#</th>
                   <th className="px-4 py-4 text-start font-semibold">الخدمة</th>
                   <th className="px-4 py-4 text-start font-semibold">القسم</th>
@@ -113,47 +149,71 @@ export default function ServicesPage() {
                   <th className="px-4 py-4 text-end font-semibold">الإجراءات</th>
                 </tr>
               </thead>
-              <tbody>
-                {filtered.map((svc, idx) => (
-                  <tr key={svc.id} className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition">
-                    <td className="px-6 py-4 text-gray-400 text-sm font-medium">{idx + 1}</td>
-                    <td className="px-4 py-4">
-                      <p className="font-semibold text-gray-900">{svc.nameAr || svc.nameEn}</p>
-                      {(svc.descriptionAr || svc.descriptionEn) && (
-                        <p className="text-xs text-gray-500 mt-1 max-w-xs truncate">
-                          {svc.descriptionAr || svc.descriptionEn}
-                        </p>
-                      )}
-                    </td>
-                    <td className="px-4 py-4">
-                      <span className="text-sm font-medium text-gray-700 bg-gray-100 px-3 py-1 rounded-full">
-                        {svc.category?.nameAr || svc.category?.nameEn || '—'}
-                      </span>
-                    </td>
-                    <td className="px-4 py-4">
-                      <StatusBadge status={svc.activeIs ? 'active' : 'inactive'} />
-                    </td>
-                    <td className="px-4 py-4">
-                      <div className="flex items-center justify-end gap-2">
-                        <button
-                          onClick={() => setModal(svc)}
-                          title="تعديل"
-                          className="w-9 h-9 flex items-center justify-center rounded-lg text-gray-400 hover:bg-blue-50 hover:text-blue-600 transition-colors"
-                        >
-                          <Pencil size={16} />
-                        </button>
-                        <button
-                          onClick={() => setServiceToDelete(svc)}
-                          title="حذف"
-                          className="w-9 h-9 flex items-center justify-center rounded-lg text-gray-400 hover:bg-red-50 hover:text-red-600 transition-colors"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
+              <DragDropContext onDragEnd={onDragEnd}>
+                <Droppable droppableId="services-table" isDropDisabled={filterCategoryId === 'all'}>
+                  {(provided) => (
+                    <tbody {...provided.droppableProps} ref={provided.innerRef}>
+                      {localServices.map((svc, index) => (
+                        <Draggable key={svc.id} draggableId={svc.id} index={index} isDragDisabled={filterCategoryId === 'all'}>
+                          {(provided) => (
+                            <tr 
+                              ref={provided.innerRef}
+                              {...provided.draggableProps}
+                              className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition bg-white"
+                            >
+                              <td className="px-4 py-4 text-center text-gray-400">
+                                {filterCategoryId !== 'all' ? (
+                                  <div {...provided.dragHandleProps} className="inline-block">
+                                    <GripVertical size={18} className="cursor-grab hover:text-gray-600" />
+                                  </div>
+                                ) : (
+                                  <span className="text-gray-300">-</span>
+                                )}
+                              </td>
+                              <td className="px-6 py-4 text-gray-400 text-sm font-medium">{index + 1}</td>
+                              <td className="px-4 py-4">
+                                <p className="font-semibold text-gray-900">{svc.nameAr || svc.nameEn}</p>
+                                {(svc.descriptionAr || svc.descriptionEn) && (
+                                  <p className="text-xs text-gray-500 mt-1 max-w-xs truncate">
+                                    {svc.descriptionAr || svc.descriptionEn}
+                                  </p>
+                                )}
+                              </td>
+                              <td className="px-4 py-4">
+                                <span className="text-sm font-medium text-gray-700 bg-gray-100 px-3 py-1 rounded-full">
+                                  {svc.category?.nameAr || svc.category?.nameEn || '—'}
+                                </span>
+                              </td>
+                              <td className="px-4 py-4">
+                                <StatusBadge status={svc.activeIs ? 'active' : 'inactive'} />
+                              </td>
+                              <td className="px-4 py-4">
+                                <div className="flex items-center justify-end gap-2">
+                                  <button
+                                    onClick={() => setModal(svc)}
+                                    title="تعديل"
+                                    className="w-9 h-9 flex items-center justify-center rounded-lg text-gray-400 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                                  >
+                                    <Pencil size={16} />
+                                  </button>
+                                  <button
+                                    onClick={() => setServiceToDelete(svc)}
+                                    title="حذف"
+                                    className="w-9 h-9 flex items-center justify-center rounded-lg text-gray-400 hover:bg-red-50 hover:text-red-600 transition-colors"
+                                  >
+                                    <Trash2 size={16} />
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          )}
+                        </Draggable>
+                      ))}
+                      {provided.placeholder}
+                    </tbody>
+                  )}
+                </Droppable>
+              </DragDropContext>
             </table>
           </div>
         )}

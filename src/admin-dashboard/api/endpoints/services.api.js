@@ -26,6 +26,7 @@ export const createService = async (payload) => {
     type: 'SERVICE',
     activeIs: payload.activeIs !== undefined ? payload.activeIs : true,
     image: payload.image || undefined,
+    orderSort: payload.orderSort ? Number(payload.orderSort) : undefined,
   };
 
   Object.keys(cleanPayload).forEach((key) => {
@@ -47,6 +48,7 @@ export const updateService = async (id, payload) => {
     categoryId: payload.categoryId || undefined,
     activeIs: payload.activeIs !== undefined ? payload.activeIs : undefined,
     image: payload.image || undefined,
+    orderSort: payload.orderSort ? Number(payload.orderSort) : undefined,
   };
 
   Object.keys(cleanPayload).forEach((key) => {
@@ -60,4 +62,10 @@ export const updateService = async (id, payload) => {
 export const deleteService = async (id) => {
   if (useMock) return Promise.resolve(deleteMockService(id));
   await axiosClient.delete(`/admin/catalog/services/${id}`);
+};
+
+export const reorderServices = async (categoryId, items) => {
+  if (useMock) return;
+  const { data } = await axiosClient.patch('/admin/catalog/order/services', { categoryId, items });
+  return data;
 };
