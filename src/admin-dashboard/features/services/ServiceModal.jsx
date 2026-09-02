@@ -2,7 +2,7 @@ import { useState } from 'react';
 import Modal from '../../../shared/components/ui/Modal';
 import Toggle from '../../../shared/components/ui/Toggle';
 
-const empty = { nameAr: '', nameEn: '', descriptionAr: '', descriptionEn: '', categoryId: '', type: 'SERVICE', image: null, activeIs: true };
+const empty = { nameAr: '', nameEn: '', descriptionAr: '', descriptionEn: '', categoryId: '', type: 'SERVICE', image: null, activeIs: true, orderSort: 1 };
 
 export default function ServiceModal({ initial = null, categories = [], onSubmit, onClose, isLoading }) {
   const isEdit = !!initial;
@@ -35,7 +35,7 @@ export default function ServiceModal({ initial = null, categories = [], onSubmit
 
   const handleSubmit = () => {
     if (!validate()) return;
-    onSubmit(form);
+    onSubmit({ ...form, orderSort: form.orderSort ? Number(form.orderSort) : undefined });
   };
 
   return (
@@ -111,16 +111,31 @@ export default function ServiceModal({ initial = null, categories = [], onSubmit
           </div>
         </div>
 
-        <div className="flex items-center justify-between py-2">
-          <div>
-            <p className="text-sm font-medium text-gray-700">Active</p>
-            <p className="text-xs text-gray-400">Inactive services are hidden from providers</p>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Sort Order</label>
+              <input
+                type="number"
+                min={1}
+                value={form.orderSort || ''}
+                onChange={(e) => set('orderSort', e.target.value)}
+                className="w-24 border border-gray-200 rounded-lg px-3 py-2 text-sm
+                  focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div className="flex items-center justify-end py-2">
+              <div className="flex items-center gap-3">
+                <div className="text-right">
+                  <p className="text-sm font-medium text-gray-700">Active</p>
+                  <p className="text-xs text-gray-400">Inactive are hidden</p>
+                </div>
+                <Toggle
+                  value={form.activeIs}
+                  onChange={(val) => set('activeIs', val)}
+                />
+              </div>
+            </div>
           </div>
-          <Toggle
-            value={form.activeIs}
-            onChange={(val) => set('activeIs', val)}
-          />
-        </div>
 
         <div className="flex gap-3 pt-2">
           <button

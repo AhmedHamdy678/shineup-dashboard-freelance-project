@@ -4,6 +4,7 @@ import {
   createService,
   updateService,
   deleteService,
+  reorderServices,
 } from '../../api/endpoints/services.api';
 
 export function useServices() {
@@ -28,5 +29,10 @@ export function useServiceMutations() {
   });
   const remove = useMutation({ mutationFn: deleteService, onSuccess: invalidate });
 
-  return { create, update, remove };
+  const reorder = useMutation({
+    mutationFn: ({ categoryId, items }) => reorderServices(categoryId, items),
+    onSuccess: invalidate,
+  });
+
+  return { create, update, remove, reorder };
 }

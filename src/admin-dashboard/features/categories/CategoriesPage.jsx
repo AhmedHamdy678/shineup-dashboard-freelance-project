@@ -1,5 +1,6 @@
-import { useState } from 'react';
-import { Plus, Pencil, Trash2, Layers, AlertTriangle } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Plus, Pencil, Trash2, Layers, AlertTriangle, GripVertical } from 'lucide-react';
+import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { useCategories, useCategoryMutations } from './useCategories';
 import { useServices } from '../services/useServices';
 import CategoryModal from './CategoryModal';
@@ -8,12 +9,39 @@ import Modal from '../../../shared/components/ui/Modal';
 import toast from 'react-hot-toast';
 
 export default function CategoriesPage() {
-  const { data: categories = [], isLoading } = useCategories();
-  const { data: services = [] } = useServices();
-  const { create, update, remove } = useCategoryMutations();
+  const { data: categoriesData, isLoading } = useCategories();
+  const { data: servicesData } = useServices();
+
+  const categories = categoriesData || [];
+  const services = servicesData || [];
+  const { create, update, remove, reorder } = useCategoryMutations();
 
   const [modal, setModal] = useState(null);
   const [categoryToDelete, setCategoryToDelete] = useState(null);
+  const [localCategories, setLocalCategories] = useState([]);
+
+  useEffect(() => {
+    if (categoriesData) {
+      setLocalCategories([...categoriesData].sort((a, b) => (a.orderSort || 0) - (b.orderSort || 0)));
+    }
+  }, [categoriesData]);
+
+  const onDragEnd = (result) => {
+    if (!result.destination) return;
+    
+    const items = Array.from(localCategories);
+    const [reorderedItem] = items.splice(result.source.index, 1);
+    items.splice(result.destination.index, 0, reorderedItem);
+    
+    setLocalCategories(items);
+    
+    const payloadItems = items.map((item, index) => ({
+      id: item.id,
+      orderSort: index + 1
+    }));
+    
+    reorder.mutate(payloadItems);
+  };
 
   const serviceCountFor = (categoryId) =>
     services.filter((s) => s.categoryId === categoryId).length;
@@ -81,52 +109,75 @@ export default function CategoriesPage() {
             <table className="w-full">
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-100 text-sm text-gray-600">
-                  <th className="px-6 py-4 text-start font-semibold">القسم</th>
+                  <th className="w-10 px-4 py-4 text-center"></th>
+                  <th className="px-6 py-4 text-start font-semibold w-12">#</th>
+                  <th className="px-4 py-4 text-start font-semibold">القسم</th>
                   <th className="px-4 py-4 text-start font-semibold">الخدمات المرتبطة</th>
                   <th className="px-4 py-4 text-start font-semibold">الحالة</th>
                   <th className="px-4 py-4 text-start font-semibold">الوصف</th>
                   <th className="px-4 py-4 text-end font-semibold">الإجراءات</th>
                 </tr>
               </thead>
-              <tbody>
-                {categories.map((cat) => (
-                  <tr key={cat.id} className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition">
-                    <td className="px-6 py-4">
-                      <p className="font-semibold text-gray-900">{cat.nameAr || cat.name}</p>
-                    </td>
-                    <td className="px-4 py-4">
-                      <span className="inline-flex items-center gap-1.5 text-sm text-blue-600 font-semibold bg-blue-50 px-2 py-1 rounded-md">
-                        {serviceCountFor(cat.id)}
-                        <span className="text-blue-500 font-medium text-xs">خدمة</span>
-                      </span>
-                    </td>
-                    <td className="px-4 py-4">
-                      <StatusBadge status={cat.activeIs ? 'active' : 'inactive'} />
-                    </td>
-                    <td className="px-4 py-4 text-sm text-gray-500 max-w-xs truncate">
-                      {cat.descriptionAr || cat.description || '—'}
-                    </td>
-                    <td className="px-4 py-4">
-                      <div className="flex items-center justify-end gap-2">
-                        <button
-                          onClick={() => setModal(cat)}
-                          title="تعديل"
-                          className="w-9 h-9 flex items-center justify-center rounded-lg text-gray-400 hover:bg-blue-50 hover:text-blue-600 transition-colors"
-                        >
-                          <Pencil size={16} />
-                        </button>
-                        <button
-                          onClick={() => setCategoryToDelete(cat)}
-                          title="حذف"
-                          className="w-9 h-9 flex items-center justify-center rounded-lg text-gray-400 hover:bg-red-50 hover:text-red-600 transition-colors"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
+              <DragDropContext onDragEnd={onDragEnd}>
+                <Droppable droppableId="categories-table">
+                  {(provided) => (
+                    <tbody {...provided.droppableProps} ref={provided.innerRef}>
+                      {localCategories.map((cat, index) => (
+                        <Draggable key={cat.id} draggableId={cat.id} index={index}>
+                          {(provided) => (
+                            <tr 
+                              ref={provided.innerRef}
+                              {...provided.draggableProps}
+                              className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition bg-white"
+                            >
+                              <td className="px-4 py-4 text-center text-gray-400">
+                                <div {...provided.dragHandleProps} className="inline-block">
+                                  <GripVertical size={18} className="cursor-grab hover:text-gray-600" />
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 text-gray-400 text-sm font-medium">{index + 1}</td>
+                              <td className="px-4 py-4">
+                                <p className="font-semibold text-gray-900">{cat.nameAr || cat.name}</p>
+                              </td>
+                              <td className="px-4 py-4">
+                                <span className="inline-flex items-center gap-1.5 text-sm text-blue-600 font-semibold bg-blue-50 px-2 py-1 rounded-md">
+                                  {serviceCountFor(cat.id)}
+                                  <span className="text-blue-500 font-medium text-xs">خدمة</span>
+                                </span>
+                              </td>
+                              <td className="px-4 py-4">
+                                <StatusBadge status={cat.activeIs ? 'active' : 'inactive'} />
+                              </td>
+                              <td className="px-4 py-4 text-sm text-gray-500 max-w-xs truncate">
+                                {cat.descriptionAr || cat.description || '—'}
+                              </td>
+                              <td className="px-4 py-4">
+                                <div className="flex items-center justify-end gap-2">
+                                  <button
+                                    onClick={() => setModal(cat)}
+                                    title="تعديل"
+                                    className="w-9 h-9 flex items-center justify-center rounded-lg text-gray-400 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                                  >
+                                    <Pencil size={16} />
+                                  </button>
+                                  <button
+                                    onClick={() => setCategoryToDelete(cat)}
+                                    title="حذف"
+                                    className="w-9 h-9 flex items-center justify-center rounded-lg text-gray-400 hover:bg-red-50 hover:text-red-600 transition-colors"
+                                  >
+                                    <Trash2 size={16} />
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          )}
+                        </Draggable>
+                      ))}
+                      {provided.placeholder}
+                    </tbody>
+                  )}
+                </Droppable>
+              </DragDropContext>
             </table>
           </div>
         )}

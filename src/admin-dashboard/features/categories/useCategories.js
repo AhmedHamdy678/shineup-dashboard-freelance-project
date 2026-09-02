@@ -5,6 +5,7 @@ import {
   createCategory,
   updateCategory,
   deleteCategory,
+  reorderCategories,
 } from '../../api/endpoints/categories.api';
 
 export function useCategories() {
@@ -35,5 +36,11 @@ export function useCategoryMutations() {
     onError: (err) => toast.error(err?.response?.data?.message || 'فشل حذف التصنيف'),
   });
 
-  return { create, update, remove };
+  const reorder = useMutation({
+    mutationFn: reorderCategories,
+    onSuccess: invalidate,
+    onError: (err) => toast.error(err?.response?.data?.message || 'فشل تغيير ترتيب التصنيفات'),
+  });
+
+  return { create, update, remove, reorder };
 }

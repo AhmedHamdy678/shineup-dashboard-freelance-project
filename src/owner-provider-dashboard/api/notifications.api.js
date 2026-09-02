@@ -24,6 +24,10 @@ const notifClient = axios.create({
 notifClient.interceptors.request.use((config) => {
   const token = localStorage.getItem('provider_token');
   if (token) config.headers.Authorization = `Bearer ${token}`;
+  
+  // Enforce Arabic language globally on every request
+  config.headers['Accept-Language'] = 'ar';
+  
   return config;
 });
 

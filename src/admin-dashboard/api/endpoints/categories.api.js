@@ -64,3 +64,10 @@ export const deleteCategory = async (id) => {
   if (useMock) return deleteMockCategory(id);
   await axiosClient.delete(`/admin/catalog/service-categories/${id}`);
 };
+
+// 5. ترتيب الفئات
+export const reorderCategories = async (items) => {
+  if (useMock) return;
+  const { data } = await axiosClient.patch('/admin/catalog/order/service-categories', { items });
+  return data;
+};
