@@ -1,4 +1,4 @@
-﻿import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import toast from 'react-hot-toast';
 import { useQueryClient, useQuery } from '@tanstack/react-query';
 import providerAxiosClient from '../../../api/providerAxiosClient';
@@ -223,19 +223,24 @@ export default function ProviderPromotionForm({ initialData, onClose }) {
         });
         toast.success("تم تحديث العرض الترويجي بنجاح");
       } else {
+        // القيم المقبولة من الـ API: 'PERCENTAGE' أو 'FIXED_AMOUNT'
         const payload = {
           applicationMode: formData.applicationMode,
           nameAr: formData.nameAr,
           descriptionAr: formData.descriptionAr,
           discountType: formData.discountType,
           currency: "SAR",
-          minimumOrderMinor: formData.minimumOrder ? Math.round(Number(formData.minimumOrder) * 100) : 0,
           perCustomerUsageLimit: formData.perCustomerUsageLimit ? Number(formData.perCustomerUsageLimit) : 1,
           priority: formData.priority ? Number(formData.priority) : 100,
           startsAt: new Date(formData.startsAt).toISOString(),
           endsAt: new Date(formData.endsAt).toISOString(),
           targets: formData.targets
         };
+
+        // إرسال الحد الأدنى فقط إذا كان أكبر من 0
+        if (formData.minimumOrder && Number(formData.minimumOrder) > 0) {
+          payload.minimumOrderMinor = Math.round(Number(formData.minimumOrder) * 100);
+        }
 
         if (formData.applicationMode === 'COUPON') {
           payload.code = formData.code;
@@ -246,7 +251,7 @@ export default function ProviderPromotionForm({ initialData, onClose }) {
           if (formData.maximumDiscount) {
             payload.maximumDiscountMinor = Math.round(Number(formData.maximumDiscount) * 100);
           }
-        } else if (formData.discountType === 'FIXED') {
+        } else if (formData.discountType === 'FIXED_AMOUNT') {
           payload.fixedDiscountMinor = Math.round(Number(formData.fixedValue) * 100);
         }
 
@@ -347,7 +352,7 @@ export default function ProviderPromotionForm({ initialData, onClose }) {
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">نوع الخصم *</label>
                 <select disabled={!!initialData} name="discountType" value={formData.discountType} onChange={handleInputChange} className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none transition bg-white disabled:bg-gray-100 disabled:opacity-70 disabled:cursor-not-allowed">
                   <option value="PERCENTAGE">نسبة مئوية (%)</option>
-                  <option value="FIXED">مبلغ ثابت</option>
+                  <option value="FIXED_AMOUNT">مبلغ ثابت</option>
                 </select>
               </div>
               
