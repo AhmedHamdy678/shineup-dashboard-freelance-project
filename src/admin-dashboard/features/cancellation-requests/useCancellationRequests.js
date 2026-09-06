@@ -13,6 +13,7 @@ export const useApproveCancellationRequest = () => {
       queryClient.invalidateQueries({ queryKey: ['admin-cancellation-requests'] });
     },
     onError: (error) => {
+      if (error.response?.status === 409) return; // Handled in component
       let errorMessage = error.response?.data?.message || 'حدث خطأ أثناء الموافقة على الطلب';
       if (error.response?.data?.errors) {
         const detailedErrors = Object.values(error.response.data.errors).flat();
@@ -39,6 +40,7 @@ export const useRejectCancellationRequest = () => {
       queryClient.invalidateQueries({ queryKey: ['admin-cancellation-requests'] });
     },
     onError: (error) => {
+      if (error.response?.status === 409) return; // Handled in component
       let errorMessage = error.response?.data?.message || 'حدث خطأ أثناء رفض الطلب';
       if (error.response?.data?.errors) {
         const detailedErrors = Object.values(error.response.data.errors).flat();

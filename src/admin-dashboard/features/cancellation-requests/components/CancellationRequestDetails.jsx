@@ -7,21 +7,14 @@ import formatDate from '../../../../shared/utils/formatDate';
 import { useApproveCancellationRequest, useRejectCancellationRequest } from '../useCancellationRequests';
 
 export default function CancellationRequestDetails({ requestId, onBack }) {
-  const { mutate: approveRequest, isPending: isApproving } = useApproveCancellationRequest();
-  const { mutate: rejectRequest, isPending: isRejecting, isSuccess: isRejectSuccess } = useRejectCancellationRequest();
+  const { mutateAsync: approveRequestAsync, isPending: isApproving } = useApproveCancellationRequest();
+  const { mutateAsync: rejectRequestAsync, isPending: isRejecting } = useRejectCancellationRequest();
 
   const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
   const [rejectReason, setRejectReason] = useState("");
 
-  // Close modal and reset on success
-  useEffect(() => {
-    if (isRejectSuccess) {
-      setIsRejectModalOpen(false);
-      setRejectReason("");
-    }
-  }, [isRejectSuccess]);
 
-  const { data: responseData, isLoading, isError } = useQuery({
+  const { data: responseData, isLoading, isError, refetch } = useQuery({
     queryKey: ['admin-cancellation-request', requestId],
     queryFn: async () => {
       const res = await axiosClient.get(`admin/booking-cancellation-requests/${requestId}`);
@@ -37,9 +30,16 @@ export default function CancellationRequestDetails({ requestId, onBack }) {
     toast.success('تم نسخ المرجع');
   };
 
-  const handleApprove = () => {
+  const handleApprove = async () => {
     if (window.confirm("هل أنت متأكد من الموافقة على إلغاء هذا الحجز؟")) {
-      approveRequest(requestId);
+      try {
+        await approveRequestAsync(requestId);
+      } catch (error) {
+        if (error.response?.status === 409) {
+          toast.error("عفواً، تم اتخاذ إجراء على هذا الطلب مسبقاً.");
+          refetch();
+        }
+      }
     }
   };
 
@@ -47,9 +47,20 @@ export default function CancellationRequestDetails({ requestId, onBack }) {
     setIsRejectModalOpen(true);
   };
 
-  const confirmReject = () => {
+  const confirmReject = async () => {
     if (!rejectReason.trim()) return;
-    rejectRequest({ id: requestId, payload: { providerDecisionReason: rejectReason.trim() } });
+    try {
+      await rejectRequestAsync({ id: requestId, payload: { providerDecisionReason: rejectReason.trim() } });
+      setIsRejectModalOpen(false);
+      setRejectReason("");
+    } catch (error) {
+      if (error.response?.status === 409) {
+        toast.error("عفواً، تم اتخاذ إجراء على هذا الطلب مسبقاً.");
+        refetch();
+        setIsRejectModalOpen(false);
+        setRejectReason("");
+      }
+    }
   };
 
   const getStatusBadge = (status) => {
@@ -87,7 +98,7 @@ export default function CancellationRequestDetails({ requestId, onBack }) {
     );
   };
 
-  const isFinalStatus = data?.status && ['ADMIN_APPROVED', 'PROVIDER_APPROVED', 'REJECTED', 'PROVIDER_REJECTED', 'ADMIN_REJECTED', 'CANCELED'].includes(data.status.code);
+  const isPendingStatus = data?.status?.code === 'PENDING';
 
   return (
     <div className="space-y-6" dir="rtl">
@@ -226,7 +237,7 @@ export default function CancellationRequestDetails({ requestId, onBack }) {
       </div>
 
       {/* Actions Footer */}
-      {!isLoading && !isError && data && !isFinalStatus && (
+      {!isLoading && !isError && data && isPendingStatus && (
         <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
           <button
             onClick={handleReject}
