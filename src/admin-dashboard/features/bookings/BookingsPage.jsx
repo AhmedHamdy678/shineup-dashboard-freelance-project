@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { getBookings } from '../../api/endpoints/bookings.api';
-import Table from '../../../shared/components/ui/Table';
+import { useServices } from '../services/useServices';
 import Pagination from '../../../shared/components/ui/Pagination';
 import Badge from '../../../shared/components/ui/Badge';
 import formatDate from '../../../shared/utils/formatDate';
@@ -34,6 +34,8 @@ export default function BookingsPage() {
   const [page, setPage] = useState(1);
   const limit = 20;
 
+  const { data: services } = useServices();
+
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ['bookings', { page, limit }],
     queryFn: () => getBookings({ page, limit, sortBy: 'createdAt', sortOrder: 'desc' }),
@@ -59,55 +61,85 @@ export default function BookingsPage() {
     _rowNumber: (meta.page - 1) * (meta.limit || limit) + idx + 1,
   }));
 
-  const columns = [
-    { key: '_rowNumber', label: '#' },
-    { key: 'code', label: 'الكود' },
-    {
-      key: 'customer',
-      label: 'العميل',
-      render: (_, row) => row.customer?.name,
-    },
-    {
-      key: 'provider',
-      label: 'مقدم الخدمة',
-      render: (_, row) => {
-        const companyName = row.provider?.companyName || row.provider?.individualDisplayName || '';
-        const displayName = row.providerMember?.displayName || '';
-        return (
-          <div>
-            <div className="font-semibold text-gray-900">{companyName}</div>
-            <div className="text-xs text-gray-400">{displayName}</div>
-          </div>
-        );
-      },
-    },
-    {
-      key: 'service',
-      label: 'الخدمة',
-      render: (_, row) => row.service?.name,
-    },
-    {
-      key: 'status',
-      label: 'الحالة',
-      render: (val) => <Badge variant={statusVariant[val] || 'default'}>{statusTranslations[val] || val}</Badge>,
-    },
-    {
-      key: 'amount',
-      label: 'المبلغ',
-      render: (val) => `${Number(val).toFixed(2)} ر.س`,
-    },
-    {
-      key: 'createdAt',
-      label: 'التاريخ',
-      render: (val) => formatDate(val),
-    },
-  ];
-
   return (
     <div className="space-y-4">
       <h3 className="text-base font-semibold text-gray-800">جميع الحجوزات</h3>
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <Table columns={columns} rows={bookings} />
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm" style={{ tableLayout: 'fixed' }}>
+            <colgroup>
+              <col style={{ width: '3%' }} />   {/* # */}
+              <col style={{ width: '14%' }} />  {/* الكود */}
+              <col style={{ width: '9%' }} />   {/* العميل */}
+              <col style={{ width: '22%' }} />  {/* مقدم الخدمة */}
+              <col style={{ width: '16%' }} />  {/* الخدمة */}
+              <col style={{ width: '16%' }} />  {/* الحالة */}
+              <col style={{ width: '9%' }} />   {/* المبلغ */}
+              <col style={{ width: '11%' }} />  {/* التاريخ */}
+            </colgroup>
+            <thead className="bg-gray-50 border-b border-gray-100">
+              <tr>
+                <th className="px-3 py-3 text-center text-xs font-semibold text-gray-500">#</th>
+                <th className="px-3 py-3 text-center text-xs font-semibold text-gray-500">الكود</th>
+                <th className="px-3 py-3 text-center text-xs font-semibold text-gray-500">العميل</th>
+                <th className="px-3 py-3 text-center text-xs font-semibold text-gray-500">مقدم الخدمة</th>
+                <th className="px-3 py-3 text-center text-xs font-semibold text-gray-500">الخدمة</th>
+                <th className="px-3 py-3 text-center text-xs font-semibold text-gray-500">الحالة</th>
+                <th className="px-3 py-3 text-center text-xs font-semibold text-gray-500">المبلغ</th>
+                <th className="px-3 py-3 text-center text-xs font-semibold text-gray-500">التاريخ</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {bookings.length === 0 && (
+                <tr>
+                  <td colSpan={8} className="py-10 text-center text-gray-400">لا توجد حجوزات</td>
+                </tr>
+              )}
+              {bookings.map((row) => {
+                const companyName = row.provider?.companyName || row.provider?.individualDisplayName || '';
+                const memberName = row.providerMember?.displayName || '';
+                const adminService = services?.find(s => s.id === row.service?.id);
+                const serviceName = adminService?.nameAr || adminService?.nameEn || row.items?.[0]?.serviceName || row.service?.nameAr || row.service?.name || '—';
+                const status = row.status || row.bookingStatus?.code;
+                const amount = row.amount ?? row.totalAmount;
+
+                return (
+                  <tr key={row.id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-3 py-3 text-center text-gray-500">{row._rowNumber}</td>
+                    <td className="px-3 py-3 text-center">
+                      <span className="text-xs font-mono text-blue-600 truncate block" title={row.code || row.codeBooking}>
+                        {row.code || row.codeBooking || '—'}
+                      </span>
+                    </td>
+                    <td className="px-3 py-3 text-center">
+                      <span className="text-gray-700 truncate block" title={row.customer?.name || row.customer?.fullName}>
+                        {row.customer?.name || row.customer?.fullName || '—'}
+                      </span>
+                    </td>
+                    <td className="px-3 py-3 text-center">
+                      <div className="font-semibold text-gray-900 truncate" title={companyName}>{companyName || '—'}</div>
+                      {memberName && <div className="text-xs text-gray-400 truncate" title={memberName}>{memberName}</div>}
+                    </td>
+                    <td className="px-3 py-3 text-center">
+                      <span className="text-gray-700 truncate block" title={serviceName}>{serviceName}</span>
+                    </td>
+                    <td className="px-3 py-3 text-center">
+                      <Badge variant={statusVariant[status] || 'default'}>
+                        {statusTranslations[status] || status || '—'}
+                      </Badge>
+                    </td>
+                    <td className="px-3 py-3 text-center text-gray-700">
+                      {amount != null ? `${Number(amount).toFixed(2)} ر.س` : '—'}
+                    </td>
+                    <td className="px-3 py-3 text-center text-gray-500 text-xs">
+                      {row.createdAt ? formatDate(row.createdAt) : '—'}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
         <Pagination
           currentPage={meta.page}
           totalResults={meta.total}
