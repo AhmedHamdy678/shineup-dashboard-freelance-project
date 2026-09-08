@@ -65,7 +65,8 @@ export default function MemberTable({
 
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
-      <div className="w-full overflow-x-auto">
+      {/* Desktop Table View */}
+      <div className="w-full overflow-x-auto hidden md:block">
         <table className="min-w-full divide-y divide-gray-100">
           {/* ── Head ── */}
           <thead>
@@ -188,6 +189,82 @@ export default function MemberTable({
             })}
           </tbody>
         </table>
+      </div>
+
+      {/* Mobile Card View */}
+      <div className="md:hidden divide-y divide-gray-100">
+        {rows.length === 0 ? (
+          <div className="text-center py-8 text-gray-400">لا يوجد أعضاء في الفريق</div>
+        ) : rows.map((m, idx) => {
+          const isActive = m.userIsActive ?? (m.status === 'ACTIVE');
+          const isOwner = m.userId === currentUser?.id || m.role === 'OWNER';
+          const gradient = isActive 
+            ? AVATAR_GRADIENTS[idx % AVATAR_GRADIENTS.length] 
+            : 'from-gray-300 to-gray-400';
+
+          return (
+            <div key={`mobile-${m.id}`} className={`p-4 transition-colors ${!isActive ? 'bg-gray-50/50' : 'bg-white'}`}>
+              <div className="flex items-start justify-between mb-3">
+                <div className={`flex items-center gap-3 transition-opacity ${!isActive ? 'opacity-60 grayscale' : ''}`}>
+                  <div className={`flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br ${gradient} text-lg font-bold text-white shadow-sm`}>
+                    {getInitials(m.name)}
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <p className={`text-sm font-semibold ${isActive ? 'text-gray-900' : 'text-gray-500 line-through'}`}>
+                        {m.name}
+                      </p>
+                      {isOwner && (
+                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-700">المالك</span>
+                      )}
+                    </div>
+                    <p className="text-xs text-gray-500 mt-0.5">{m.phone || '—'}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">{m.email}</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="flex items-center justify-between py-3 border-y border-gray-100 mb-3">
+                <div className="flex items-center gap-2">
+                  <Toggle value={isActive} onChange={() => handleToggle(m)} />
+                  <span className={`text-xs font-semibold ${isActive ? 'text-emerald-600' : 'text-gray-400'}`}>
+                    {isActive ? 'نشط' : 'موقوف'}
+                  </span>
+                </div>
+                <div className="text-xs text-gray-500 text-left">
+                  <p className="font-medium">تاريخ الانضمام</p>
+                  <p>{formatDate(m.joinedAt)}</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => navigate(`/provider/team/${m.id}`)}
+                  className="flex-1 flex items-center justify-center gap-1.5 rounded-lg border border-gray-200 py-2 text-xs font-semibold text-gray-600 hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-200 transition-colors"
+                >
+                  <Eye className="h-4 w-4" />
+                  عرض
+                </button>
+                <button
+                  onClick={() => handleEdit(m)}
+                  className="flex-1 flex items-center justify-center gap-1.5 rounded-lg border border-gray-200 py-2 text-xs font-semibold text-gray-600 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-colors"
+                >
+                  <Edit className="h-4 w-4" />
+                  تعديل
+                </button>
+                {!isOwner && (
+                  <button
+                    onClick={() => handleDelete(m)}
+                    className="flex-1 flex items-center justify-center gap-1.5 rounded-lg border border-red-200 bg-red-50 py-2 text-xs font-semibold text-red-600 hover:bg-red-600 hover:text-white transition-colors"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    حذف
+                  </button>
+                )}
+              </div>
+            </div>
+          );
+        })}
       </div>
 
       {/* Footer row count */}

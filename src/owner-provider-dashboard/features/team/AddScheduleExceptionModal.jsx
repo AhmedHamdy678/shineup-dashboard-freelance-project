@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import providerAxiosClient from '../../api/providerAxiosClient';
+import { getApiErrorMessage } from '../../../admin-dashboard/api/axiosClient';
 import Modal from '../../../shared/components/ui/Modal';
 
 export default function AddScheduleExceptionModal({ memberId, onClose, onSaveSuccess }) {
@@ -41,7 +42,7 @@ export default function AddScheduleExceptionModal({ memberId, onClose, onSaveSuc
       onSaveSuccess();
     } catch (err) {
       console.error('Failed to add exception', err);
-      setError('حدث خطأ أثناء حفظ الاستثناء. يرجى المحاولة مرة أخرى.');
+      setError(getApiErrorMessage(err, 'حدث خطأ أثناء حفظ الاستثناء. يرجى المحاولة مرة أخرى.'));
     } finally {
       setIsLoading(false);
     }

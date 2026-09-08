@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import useProviderAuthStore from '../../store/providerAuthStore';
+import { getApiErrorMessage } from '../../../admin-dashboard/api/axiosClient';
 
 export default function ProviderLoginPage() {
   const navigate = useNavigate();
@@ -51,7 +52,7 @@ export default function ProviderLoginPage() {
       login(user, token);
       navigate('/provider', { replace: true });
     } catch (err) {
-      setError(err?.response?.data?.message || 'فشل تسجيل الدخول. حاول مرة أخرى.');
+      setError(getApiErrorMessage(err, 'فشل تسجيل الدخول. حاول مرة أخرى.'));
     } finally {
       setLoading(false);
     }

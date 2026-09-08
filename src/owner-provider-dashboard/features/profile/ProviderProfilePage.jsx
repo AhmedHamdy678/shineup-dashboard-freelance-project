@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { Save, Send, AlertTriangle, Edit2, X } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { getApiErrorMessage } from '../../../admin-dashboard/api/axiosClient';
 import { useProviderProfileData, useUpdateProviderProfile } from './useProviderProfile';
 import { useResubmitApplication } from './hooks/useProviderProfileHooks';
 import ProfilePreviewCard from './components/ProfilePreviewCard';
@@ -98,20 +99,7 @@ export default function ProviderProfilePage() {
       },
       onError: (err) => {
         console.error("Profile Update Error:", err);
-        const data = err.response?.data;
-        let msg = data?.message || err.message || "حدث خطأ أثناء تحديث الملف التجاري";
-        
-        // If message is an array (NestJS validation)
-        if (Array.isArray(data?.message)) {
-          msg = data.message.join(' | ');
-        }
-        
-        // If there's an errors array or object
-        if (data?.errors) {
-          msg += " - " + JSON.stringify(data.errors);
-        }
-
-        toast.error(`خطأ: ${msg}`, { duration: 6000 });
+        toast.error(getApiErrorMessage(err, 'حدث خطأ أثناء تحديث الملف التجاري'), { duration: 6000 });
       }
     });
   };
@@ -193,8 +181,7 @@ export default function ProviderProfilePage() {
           setProfileStatus('PENDING_REVIEW');
         },
         onError: (err) => {
-          const msg = err.response?.data?.message || err.message || 'حدث خطأ أثناء إرسال الطلب';
-          toast.error(`خطأ: ${msg}`);
+          toast.error(getApiErrorMessage(err, 'حدث خطأ أثناء إرسال الطلب'));
         }
       });
     }

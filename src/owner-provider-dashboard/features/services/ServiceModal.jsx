@@ -19,17 +19,12 @@ export default function ServiceModal({ service, existingServices = [], onClose, 
     if (carTypes.length === 0) return;
 
     setCarPrices((prev) => {
-      // If we already have state initialized for these car types (and we aren't switching modes), keep user input
-      if (Object.keys(prev).length === carTypes.length && !isEditMode) {
-        return prev;
-      }
-      if (Object.keys(prev).length > 0 && isEditMode) {
-        return prev;
-      }
-
-      const initial = {};
+      // Instead of wiping state if length doesn't match, we merge to preserve user input
+      const initial = { ...prev };
       carTypes.forEach((ct) => {
-        initial[ct.id] = { priceProvider: '', minutesDuration: '' };
+        if (!initial[ct.id]) {
+          initial[ct.id] = { priceProvider: '', minutesDuration: '' };
+        }
       });
 
       if (isEditMode && service?.prices) {
@@ -75,7 +70,7 @@ export default function ServiceModal({ service, existingServices = [], onClose, 
     setErrorMsg('');
 
     if (!isEditMode && !catalogServiceId) {
-      setErrorMsg('Please select a service.');
+      setErrorMsg('يرجى اختيار خدمة.');
       return;
     }
 
@@ -108,12 +103,12 @@ export default function ServiceModal({ service, existingServices = [], onClose, 
       });
 
     if (hasPartialEntry) {
-      setErrorMsg('Please complete both price and duration for the vehicle types you are adding.');
+      setErrorMsg('يرجى إكمال السعر والمدة لجميع أنواع السيارات التي تضيفها.');
       return;
     }
 
     if (prices.length === 0) {
-      setErrorMsg('Please add pricing and duration for at least one vehicle type.');
+      setErrorMsg('يرجى إضافة سعر ومدة لنوع سيارة واحد على الأقل.');
       return;
     }
 
@@ -126,7 +121,7 @@ export default function ServiceModal({ service, existingServices = [], onClose, 
 
   return (
     <Modal
-      title={isEditMode ? "Edit Service" : "Add Service"}
+      title={isEditMode ? "تعديل الخدمة" : "إضافة خدمة"}
       onClose={onClose}
       size="lg"
     >
@@ -134,7 +129,7 @@ export default function ServiceModal({ service, existingServices = [], onClose, 
         {/* Service Selection */}
         <div>
           <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-            Service
+            الخدمة
           </label>
           {isEditMode ? (
             <div className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-500 font-medium">
@@ -145,7 +140,7 @@ export default function ServiceModal({ service, existingServices = [], onClose, 
               disabled
               className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-gray-50 text-gray-400"
             >
-              <option>Loading services...</option>
+              <option>جاري تحميل الخدمات...</option>
             </select>
           ) : (
             <select
@@ -155,7 +150,7 @@ export default function ServiceModal({ service, existingServices = [], onClose, 
               onChange={(e) => setCatalogServiceId(e.target.value)}
               className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
             >
-              <option value="">Choose a service...</option>
+              <option value="">اختر خدمة...</option>
               {availableCatalogServices.map((cat) => (
                 <option key={cat.id} value={cat.id}>
                   {cat.name}
@@ -168,8 +163,8 @@ export default function ServiceModal({ service, existingServices = [], onClose, 
         {/* Availability Toggle */}
         <div className="flex items-center justify-between py-2">
           <div>
-            <p className="text-sm font-semibold text-gray-700">Available</p>
-            <p className="text-xs text-gray-400">Customers can book this service</p>
+            <p className="text-sm font-semibold text-gray-700">متاح</p>
+            <p className="text-xs text-gray-400">يمكن للعملاء حجز هذه الخدمة</p>
           </div>
           <Toggle
             value={availableIs}
@@ -180,15 +175,15 @@ export default function ServiceModal({ service, existingServices = [], onClose, 
         {/* Dynamic Prices by Car Type */}
         <div>
           <div className="flex items-center justify-between mb-3">
-            <p className="text-sm font-semibold text-gray-700">Prices by Car Type</p>
+            <p className="text-sm font-semibold text-gray-700">الأسعار حسب نوع السيارة</p>
             {isLoadingCarTypes && (
-              <span className="text-xs text-gray-400">Loading car types...</span>
+              <span className="text-xs text-gray-400">جاري تحميل أنواع السيارات...</span>
             )}
           </div>
 
           {carTypes.length === 0 && !isLoadingCarTypes ? (
             <p className="text-sm text-gray-400 text-center py-4 bg-gray-50 rounded-lg">
-              No car types available
+              لا توجد أنواع سيارات متاحة
             </p>
           ) : (
             <div className="space-y-2">
@@ -204,7 +199,7 @@ export default function ServiceModal({ service, existingServices = [], onClose, 
                     </div>
                     <div className="flex-1">
                       <label className="block text-xs text-gray-500 mb-1">
-                        Price (SAR)
+                        السعر (ر.س)
                       </label>
                       <input
                         type="number"
@@ -218,7 +213,7 @@ export default function ServiceModal({ service, existingServices = [], onClose, 
                     </div>
                     <div className="flex-1">
                       <label className="block text-xs text-gray-500 mb-1">
-                        Duration (min)
+                        المدة (دقيقة)
                       </label>
                       <input
                         type="number"
@@ -252,14 +247,14 @@ export default function ServiceModal({ service, existingServices = [], onClose, 
             disabled={isSaving}
             className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 disabled:opacity-50 transition-colors"
           >
-            Cancel
+            إلغاء
           </button>
           <button
             type="submit"
             disabled={isSaving || (!isEditMode && !catalogServiceId)}
             className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg disabled:opacity-50 transition-colors"
           >
-            {isSaving ? "Saving..." : isEditMode ? "Save Changes" : "Add Service"}
+            {isSaving ? "جاري الحفظ..." : isEditMode ? "حفظ التعديلات" : "إضافة خدمة"}
           </button>
         </div>
       </form>

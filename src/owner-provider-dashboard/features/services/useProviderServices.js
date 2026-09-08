@@ -1,4 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import toast from 'react-hot-toast';
+import { getApiErrorMessage } from '../../../admin-dashboard/api/axiosClient';
 import {
   fetchCatalogServices,
   getProviderServices,
@@ -56,6 +58,7 @@ export function useUpdateProviderService() {
       if (context?.previousServices) {
         queryClient.setQueryData(["provider-services"], context.previousServices);
       }
+      toast.error(getApiErrorMessage(err, 'فشل تحديث الخدمة'));
     }
   });
 }

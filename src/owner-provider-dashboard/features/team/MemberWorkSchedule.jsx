@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import toast from 'react-hot-toast';
+import { getApiErrorMessage } from '../../../admin-dashboard/api/axiosClient';
 import { Clock, Calendar, AlertCircle, CheckCircle, Edit, Trash2 } from 'lucide-react';
 import providerAxiosClient from '../../api/providerAxiosClient';
 import Modal from '../../../shared/components/ui/Modal';
@@ -54,7 +55,7 @@ export default function MemberWorkSchedule({ memberId }) {
           setSchedule({ periods: [], exceptions: [] });
           setError(null);
         } else {
-          setError('حدث خطأ أثناء تحميل جدول العمل. يرجى المحاولة مرة أخرى.');
+          setError(getApiErrorMessage(err, 'حدث خطأ أثناء تحميل جدول العمل. يرجى المحاولة مرة أخرى.'));
         }
       }
     } finally {
@@ -77,7 +78,7 @@ export default function MemberWorkSchedule({ memberId }) {
     } catch (err) {
       console.error('Failed to delete exception:', err);
       // Bug #3 fix: replace alert() with toast.error for consistency
-      toast.error(err.response?.data?.message || 'حدث خطأ أثناء محاولة الحذف. يرجى المحاولة مرة أخرى.');
+      toast.error(getApiErrorMessage(err, 'حدث خطأ أثناء محاولة الحذف. يرجى المحاولة مرة أخرى.'));
     } finally {
       setDeletingId(null);
     }

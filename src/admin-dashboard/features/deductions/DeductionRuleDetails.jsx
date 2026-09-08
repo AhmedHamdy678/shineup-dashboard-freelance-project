@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axiosClient from '../../api/axiosClient';
+import axiosClient, { getApiErrorMessage } from '../../api/axiosClient';
 import { formatBps, formatMinorUnits } from '../../../shared/utils/financialUtils';
 import formatDate from '../../../shared/utils/formatDate';
 import { ArrowRight, Activity, Percent, Calendar, AlertCircle } from 'lucide-react';
@@ -24,7 +24,7 @@ export default function DeductionRuleDetails() {
       setRule(res.data?.data || res.data);
     } catch (err) {
       console.error('Failed to fetch rule details', err);
-      setError('تعذر تحميل تفاصيل القاعدة. يرجى المحاولة لاحقاً.');
+      setError(getApiErrorMessage(err, 'تعذر تحميل تفاصيل القاعدة. يرجى المحاولة لاحقاً.'));
     } finally {
       setLoading(false);
     }

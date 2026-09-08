@@ -40,10 +40,6 @@ providerAxiosClient.interceptors.response.use(
         if (extracted.length > 0) {
           detailedErrorString = extracted.join(' | ');
         }
-      } else if (data.error) {
-        detailedErrorString = typeof data.error === 'string' 
-          ? data.error 
-          : JSON.stringify(data.error);
       }
 
       if (detailedErrorString) {

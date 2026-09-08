@@ -11,6 +11,8 @@
  */
 import { useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import toast from 'react-hot-toast';
+import { getApiErrorMessage } from '../../../admin-dashboard/api/axiosClient';
 import {
   getNotifications,
   markAllNotificationsRead,
@@ -88,6 +90,7 @@ export function useMarkAllRead() {
       if (context?.previous) {
         queryClient.setQueryData(QUERY_KEY, context.previous);
       }
+      toast.error(getApiErrorMessage(_err, 'حدث خطأ أثناء تحديث الإشعارات'));
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEY });
@@ -122,6 +125,7 @@ export function useDeleteNotification() {
       if (context?.previous) {
         queryClient.setQueryData(QUERY_KEY, context.previous);
       }
+      toast.error(getApiErrorMessage(_err, 'حدث خطأ أثناء حذف الإشعار'));
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEY });
@@ -159,6 +163,7 @@ export function useMarkNotificationRead() {
       if (context?.previous) {
         queryClient.setQueryData(QUERY_KEY, context.previous);
       }
+      toast.error(getApiErrorMessage(_err, 'حدث خطأ أثناء تحديث الإشعار'));
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEY });

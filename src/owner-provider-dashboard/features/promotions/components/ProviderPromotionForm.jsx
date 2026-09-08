@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import toast from 'react-hot-toast';
+import { getApiErrorMessage } from '../../../../admin-dashboard/api/axiosClient';
 import { useQueryClient, useQuery } from '@tanstack/react-query';
 import providerAxiosClient from '../../../api/providerAxiosClient';
 import { X, Check, Info, CreditCard, BarChart2, Calendar, Target } from 'lucide-react';
@@ -280,7 +281,7 @@ export default function ProviderPromotionForm({ initialData, onClose }) {
       onClose();
     } catch (error) {
       console.error(error);
-      toast.error(error.response?.data?.message || (initialData ? "حدث خطأ أثناء تحديث العرض" : "حدث خطأ أثناء إنشاء العرض الترويجي"));
+      toast.error(getApiErrorMessage(error, initialData ? 'حدث خطأ أثناء تحديث العرض' : 'حدث خطأ أثناء إنشاء العرض الترويجي'));
     } finally {
       setIsSubmitting(false);
     }

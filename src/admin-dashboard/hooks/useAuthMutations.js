@@ -11,6 +11,7 @@
  */
 import { useMutation } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
+import { getApiErrorMessage } from '../api/axiosClient';
 import {
   forgotPassword,
   resetPassword,
@@ -36,6 +37,7 @@ export function useForgotPassword(options = {}) {
       options.onSuccess?.(data, ...args);
     },
     onError: (error, ...args) => {
+      toast.error(getApiErrorMessage(error, 'فشل إرسال رمز التحقق'));
       options.onError?.(error, ...args);
     },
   });
@@ -60,6 +62,7 @@ export function useResetPassword(options = {}) {
       options.onSuccess?.(data, ...args);
     },
     onError: (error, ...args) => {
+      toast.error(getApiErrorMessage(error, 'فشل تغيير كلمة المرور'));
       options.onError?.(error, ...args);
     },
   });
@@ -91,6 +94,7 @@ export function useVerifyOtp(options = {}) {
       options.onSuccess?.(data, ...args);
     },
     onError: (error, ...args) => {
+      toast.error(getApiErrorMessage(error, 'فشل التحقق من الرمز'));
       options.onError?.(error, ...args);
     },
   });

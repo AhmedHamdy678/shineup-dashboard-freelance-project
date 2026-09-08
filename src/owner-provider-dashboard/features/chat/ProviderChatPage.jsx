@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import toast from "react-hot-toast";
+import { getApiErrorMessage } from "../../../admin-dashboard/api/axiosClient";
 import ChatSidebar from "./components/ChatSidebar";
 import ChatWindow from "./components/ChatWindow";
 import NewInternalChatModal from "./components/NewInternalChatModal";
@@ -119,7 +120,7 @@ export default function ProviderChatPage() {
           },
           onError: (err) => {
             console.error("Failed to create conversation", err);
-            toast.error(err?.response?.data?.message || 'فشل إنشاء المحادثة');
+            toast.error(getApiErrorMessage(err, 'فشل إنشاء المحادثة'));
           }
         }
       );
@@ -133,7 +134,7 @@ export default function ProviderChatPage() {
           },
           onError: (err) => {
             console.error("Failed to send message", err);
-            toast.error(err?.response?.data?.message || 'فشل إرسال الرسالة');
+            toast.error(getApiErrorMessage(err, 'فشل إرسال الرسالة'));
           }
         }
       );

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { toast } from "react-hot-toast";
+import { getApiErrorMessage } from '../../../admin-dashboard/api/axiosClient';
 import { Plus, Edit, Trash2, LayoutList, Grid3X3, Clock, Coins, ChevronDown } from "lucide-react";
 import {
   useProviderServices,
@@ -48,7 +49,7 @@ export default function ProviderServicesPage() {
       toast.success("تم حذف الخدمة بنجاح");
     } catch (error) {
       console.error('Failed to delete service:', error);
-      toast.error(error?.response?.data?.message || "فشل حذف الخدمة");
+      toast.error(getApiErrorMessage(error, 'فشل حذف الخدمة'));
     } finally {
       setServiceToDelete(null);
     }
@@ -68,7 +69,7 @@ export default function ProviderServicesPage() {
         toast.success("تم اضافة الخدمة بنجاح");
       }
     } catch (error) {
-      toast.error(error?.response?.data?.message || "فشل اضافة الخدمة");
+      toast.error(getApiErrorMessage(error, 'فشل حفظ الخدمة'));
     }
   };
 

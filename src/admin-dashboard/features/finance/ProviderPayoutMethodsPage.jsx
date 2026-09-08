@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import axiosClient from '../../api/axiosClient';
+import axiosClient, { getApiErrorMessage } from '../../api/axiosClient';
 import toast from 'react-hot-toast';
 import { Landmark, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
@@ -15,7 +15,7 @@ export default function ProviderPayoutMethodsPage() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
-  const { data, isLoading, isError } = useQuery({
+  const { data, isLoading, isError, error } = useQuery({
     queryKey: ['provider-payout-methods', page],
     queryFn: async () => {
       const res = await axiosClient.get(`/admin/provider-payout-methods?page=${page}&limit=${pageSize}`);
@@ -64,7 +64,7 @@ export default function ProviderPayoutMethodsPage() {
   };
 
   if (isError) {
-    toast.error('حدث خطأ أثناء جلب الحسابات البنكية للمزودين');
+    toast.error(getApiErrorMessage(error, 'حدث خطأ أثناء جلب الحسابات البنكية للمزودين'));
   }
 
   const items = data?.items || [];

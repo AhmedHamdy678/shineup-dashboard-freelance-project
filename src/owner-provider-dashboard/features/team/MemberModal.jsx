@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { getApiErrorMessage } from '../../../admin-dashboard/api/axiosClient';
 import Modal from '../../../shared/components/ui/Modal';
 import Toggle from '../../../shared/components/ui/Toggle';
 import { useActivateMember, useSuspendMember } from './useTeam';
@@ -52,8 +53,7 @@ export default function MemberModal({ member, onClose, onSave, isSaving }) {
       };
       const onError = (err) => {
         console.error("Status Change Error:", err);
-        const msg = err.response?.data?.message || err.message || "حدث خطأ أثناء تغيير الحالة";
-        toast.error(`خطأ: ${msg}`);
+        toast.error(getApiErrorMessage(err, 'حدث خطأ أثناء تغيير الحالة'));
       };
 
       if (isActive) {

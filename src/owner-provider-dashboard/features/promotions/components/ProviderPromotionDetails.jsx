@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import providerAxiosClient from '../../../api/providerAxiosClient';
 import toast from 'react-hot-toast';
+import { getApiErrorMessage } from '../../../../admin-dashboard/api/axiosClient';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
 import { ArrowRight, Info, CreditCard, BarChart2, Calendar, Target, CheckCircle2, Loader2, PauseCircle, XCircle, Users, Wallet, Banknote, History, ChevronRight, ChevronLeft, Receipt } from 'lucide-react';
@@ -188,7 +189,7 @@ export default function ProviderPromotionDetails({ promotionId, onBack }) {
       queryClient.invalidateQueries({ queryKey: ['provider-promotions'] });
     } catch (error) {
       console.error(error);
-      toast.error(error.response?.data?.message || "حدث خطأ أثناء تفعيل العرض");
+      toast.error(getApiErrorMessage(error, 'حدث خطأ أثناء تفعيل العرض'));
     } finally {
       setIsActivating(false);
     }
@@ -209,7 +210,7 @@ export default function ProviderPromotionDetails({ promotionId, onBack }) {
       queryClient.invalidateQueries({ queryKey: ['provider-promotions'] });
     } catch (error) {
       console.error(error);
-      toast.error(error.response?.data?.message || "حدث خطأ أثناء إيقاف العرض");
+      toast.error(getApiErrorMessage(error, 'حدث خطأ أثناء إيقاف العرض'));
     } finally {
       setIsPausing(false);
     }
@@ -230,7 +231,7 @@ export default function ProviderPromotionDetails({ promotionId, onBack }) {
       queryClient.invalidateQueries({ queryKey: ['provider-promotions'] });
     } catch (error) {
       console.error(error);
-      toast.error(error.response?.data?.message || "حدث خطأ أثناء إلغاء العرض");
+      toast.error(getApiErrorMessage(error, 'حدث خطأ أثناء إلغاء العرض'));
     } finally {
       setIsCancelling(false);
     }

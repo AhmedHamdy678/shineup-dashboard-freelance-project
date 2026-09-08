@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Clock, Plus, Trash2, Save, Globe, AlertCircle, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { getApiErrorMessage } from '../../../admin-dashboard/api/axiosClient';
 import providerAxiosClient from '../../api/providerAxiosClient';
 import Toggle from '../../../shared/components/ui/Toggle'; // Reusing your existing Toggle component
 
@@ -208,7 +209,7 @@ export default function MemberScheduleForm({ memberId, onSaveSuccess, onClose })
       console.error(err);
       // Bug #4 fix: The global Axios interceptor already normalizes all 400
       // validation errors into err.response.data.message — no need to re-extract.
-      toast.error(err.response?.data?.message || 'حدث خطأ أثناء حفظ الجدول');
+      toast.error(getApiErrorMessage(err, 'حدث خطأ أثناء حفظ الجدول'));
     } finally {
       setIsSaving(false);
     }

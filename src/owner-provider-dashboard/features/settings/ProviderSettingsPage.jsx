@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
+import toast from "react-hot-toast";
 import { Bell, Globe, Lock, Shield, Save } from "lucide-react";
 import Card from "../../../shared/components/ui/Card";
 import Toggle from "../../../shared/components/ui/Toggle";
@@ -16,6 +18,17 @@ export default function ProviderSettingsPage() {
   const toggle = (key) => {
     setSettings((prev) => ({ ...prev, [key]: !prev[key] }));
   };
+
+  const { mutate: updateSettings, isPending } = useMutation({
+    mutationFn: async (data) => {
+      // Mock API call
+      await new Promise(resolve => setTimeout(resolve, 600));
+      return data;
+    },
+    onSuccess: () => {
+      toast.success("تم حفظ الإعدادات بنجاح");
+    }
+  });
 
   return (
     <div className="space-y-6">
@@ -40,7 +53,7 @@ export default function ProviderSettingsPage() {
             <div key={item.key} className="flex items-center justify-between py-2">
               <span className="text-sm text-gray-700">{item.label}</span>
               <Toggle
-                checked={settings[item.key]}
+                value={settings[item.key]}
                 onChange={() => toggle(item.key)}
               />
             </div>
@@ -60,7 +73,7 @@ export default function ProviderSettingsPage() {
               <p className="text-xs text-gray-400">التحكم في ظهور متجرك في نتائج البحث</p>
             </div>
             <Toggle
-              checked={settings.showOnline}
+              value={settings.showOnline}
               onChange={() => toggle("showOnline")}
             />
           </div>
@@ -78,7 +91,10 @@ export default function ProviderSettingsPage() {
               <span className="text-sm text-gray-700">تغيير كلمة المرور</span>
               <p className="text-xs text-gray-400">آخر تغيير منذ 30 يوماً</p>
             </div>
-            <button className="px-4 py-1.5 text-sm font-medium text-emerald-700 bg-emerald-50 rounded-lg hover:bg-emerald-100 transition-colors">
+            <button 
+              onClick={() => toast.success("سيتم توفير ميزة تغيير كلمة المرور قريباً")}
+              className="px-4 py-1.5 text-sm font-medium text-emerald-700 bg-emerald-50 rounded-lg hover:bg-emerald-100 transition-colors"
+            >
               تغيير
             </button>
           </div>
@@ -86,9 +102,13 @@ export default function ProviderSettingsPage() {
       </Card>
 
       <div className="flex justify-end">
-        <button className="flex items-center gap-2 px-6 py-2.5 text-sm font-medium text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 transition-colors">
+        <button 
+          onClick={() => updateSettings(settings)}
+          disabled={isPending}
+          className="flex items-center gap-2 px-6 py-2.5 text-sm font-medium text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-50"
+        >
           <Save className="w-4 h-4" />
-          حفظ الإعدادات
+          {isPending ? 'جاري الحفظ...' : 'حفظ الإعدادات'}
         </button>
       </div>
     </div>

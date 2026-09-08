@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, Fragment } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import axiosClient from '../../../admin-dashboard/api/axiosClient';
 import { v4 as uuidv4 } from 'uuid';
@@ -59,16 +59,27 @@ export default function ConversationThread({ selectedConversationId, onBack, cur
 
   // Intersection Observer to fetch older messages
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
-          fetchNextPage();
-        }
-      },
-      { threshold: 1.0 }
-    );
-    if (observerTarget.current) observer.observe(observerTarget.current);
-    return () => observer.disconnect();
+    let observer;
+    
+    // We only create and attach the observer if we have a target and there's a next page
+    if (observerTarget.current && hasNextPage) {
+      observer = new IntersectionObserver(
+        (entries) => {
+          if (entries[0].isIntersecting && !isFetchingNextPage) {
+            fetchNextPage();
+          }
+        },
+        { threshold: 1.0 }
+      );
+      
+      observer.observe(observerTarget.current);
+    }
+    
+    return () => {
+      if (observer) {
+        observer.disconnect();
+      }
+    };
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   // 3. Mark Read

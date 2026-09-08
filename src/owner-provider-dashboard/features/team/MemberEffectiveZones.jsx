@@ -4,6 +4,7 @@ import { MapContainer, TileLayer, Circle, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import providerAxiosClient from '../../api/providerAxiosClient';
+import { getApiErrorMessage } from '../../../admin-dashboard/api/axiosClient';
 
 // Component to handle bounds
 function MapBoundsController({ zones }) {
@@ -54,7 +55,7 @@ export default function MemberEffectiveZones({ memberId }) {
         setZones(fetchedZones);
       } catch (err) {
         console.error('Failed to fetch effective service zones:', err);
-        setError('حدث خطأ أثناء جلب مناطق التغطية الخاصة بالموظف.');
+        setError(getApiErrorMessage(err, 'حدث خطأ أثناء جلب مناطق التغطية الخاصة بالموظف.'));
       } finally {
         setIsLoading(false);
       }

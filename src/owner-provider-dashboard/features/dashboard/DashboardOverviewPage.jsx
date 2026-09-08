@@ -1,5 +1,7 @@
 import React from "react";
-import { DollarSign, CalendarCheck, Star, Layers, Loader2 } from "lucide-react";
+import { DollarSign, CalendarCheck, Star, Layers } from "lucide-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import toast from "react-hot-toast";
 import { useDashboardOverview } from "./useDashboardOverview";
 import StatCard from "./components/StatCard";
 import TodayOperationsCard from "./components/TodayOperationsCard";
@@ -13,6 +15,19 @@ export default function DashboardOverviewPage() {
   const isRejected = profileStatus === 'REJECTED';
 
   const { data, isLoading, isError } = useDashboardOverview();
+  const queryClient = useQueryClient();
+
+  const { mutate: toggleAvailability, isPending: isToggling } = useMutation({
+    mutationFn: async (currentStatus) => {
+      // Mock API call
+      await new Promise(resolve => setTimeout(resolve, 500));
+      return !currentStatus;
+    },
+    onSuccess: () => {
+      toast.success("تم تحديث حالة الظهور بنجاح");
+      queryClient.invalidateQueries({ queryKey: ['provider-dashboard-overview'] });
+    }
+  });
 
   if (isPending) {
     return <DashboardPendingView />;
@@ -77,13 +92,17 @@ export default function DashboardOverviewPage() {
           <span className="text-sm font-medium text-gray-600">
             {provider.availableIs ? 'متاح' : 'غير متاح'}
           </span>
-          <div className={`w-12 h-6 rounded-full p-1 cursor-pointer transition-colors ${
-            provider.availableIs ? 'bg-emerald-500' : 'bg-gray-300'
-          }`}>
+          <button 
+            onClick={() => toggleAvailability(provider.availableIs)}
+            disabled={isToggling}
+            className={`w-12 h-6 rounded-full p-1 cursor-pointer transition-colors focus:outline-none disabled:opacity-50 ${
+              provider.availableIs ? 'bg-emerald-500' : 'bg-gray-300'
+            }`}
+          >
             <div className={`w-4 h-4 rounded-full bg-white shadow-sm transform transition-transform ${
               provider.availableIs ? '-translate-x-6' : 'translate-x-0'
             }`}></div>
-          </div>
+          </button>
         </div>
       </div>
 

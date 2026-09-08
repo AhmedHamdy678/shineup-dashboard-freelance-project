@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQueryClient, useMutation, useQuery } from '@tanstack/react-query';
-import axiosClient from '../../api/axiosClient';
+import axiosClient, { getApiErrorMessage } from '../../api/axiosClient';
 import { Bell, Search, MessageSquare, Clock, CheckCheck } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { formatDistanceToNow } from 'date-fns';
@@ -33,7 +33,7 @@ export default function AdminNotificationsPage() {
       }
       setTotal(response.data.meta?.total || 0);
     } catch (err) {
-      setError('حدث خطأ أثناء جلب الإشعارات.');
+      setError(getApiErrorMessage(err, 'حدث خطأ أثناء جلب الإشعارات.'));
       console.error(err);
     } finally {
       setLoading(false);
@@ -61,8 +61,8 @@ export default function AdminNotificationsPage() {
       queryClient.invalidateQueries({ queryKey: ['notifications', 'unreadCount'] });
       toast.success('تم تحديد جميع الإشعارات كمقروءة');
     },
-    onError: () => {
-      toast.error('حدث خطأ أثناء تحديث الإشعارات');
+    onError: (error) => {
+      toast.error(getApiErrorMessage(error, 'حدث خطأ أثناء تحديث الإشعارات'));
     }
   });
 
