@@ -62,6 +62,55 @@ export function extractBackendValidationMessage(errors) {
   return "";
 }
 
+/**
+ * Extracts a human-readable error message from an Axios error object.
+ *
+ * Checks the following in order:
+ *  1. `error.response.data.message` (string or array of validation messages)
+ *  2. `error.response.data.errors`  (delegated to extractBackendValidationMessage)
+ *  3. `error.response.data.error`   (some APIs use this key)
+ *  4. Falls back to the provided `fallback` string, or a default Arabic generic.
+ *
+ * @param {Error}  error    – The Axios error (or any Error) caught in a catch/onError.
+ * @param {string} [fallback] – Optional context-specific fallback message.
+ * @returns {string} A readable error message suitable for toast / UI display.
+ */
+export function getApiErrorMessage(error, fallback) {
+  const data = error?.response?.data;
+  const defaultMsg = fallback || "حدث خطأ غير متوقع";
+
+  if (!data) return defaultMsg;
+
+  // 1. data.message — string or array (NestJS class-validator returns arrays)
+  if (typeof data.message === "string" && data.message.trim()) {
+    return data.message;
+  }
+  if (Array.isArray(data.message) && data.message.length > 0) {
+    const parts = data.message.map((m) => {
+      if (typeof m === "string") return m;
+      if (typeof m === "object" && m?.constraints) {
+        return Object.values(m.constraints).join("، ");
+      }
+      return typeof m === "object" ? JSON.stringify(m) : String(m);
+    });
+    return parts.join(" | ");
+  }
+
+  // 2. data.errors — delegate to the existing shape-aware helper
+  const fromErrors = extractBackendValidationMessage(data.errors);
+  if (fromErrors) return fromErrors;
+
+  // 3. data.error — some endpoints use this key
+  if (typeof data.error === "string" && data.error.trim()) {
+    return data.error;
+  }
+  if (data.error && typeof data.error === "object") {
+    return JSON.stringify(data.error);
+  }
+
+  return defaultMsg;
+}
+
 axiosClient.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -75,13 +124,6 @@ axiosClient.interceptors.response.use(
     if (error.response?.status === 400 && error.response?.data) {
       const data = error.response.data;
       let detailedErrorString = extractBackendValidationMessage(data.errors);
-
-      if (!detailedErrorString && data.error) {
-        detailedErrorString =
-          typeof data.error === "string"
-            ? data.error
-            : JSON.stringify(data.error);
-      }
 
       if (detailedErrorString) {
         error.response.data.message = detailedErrorString;

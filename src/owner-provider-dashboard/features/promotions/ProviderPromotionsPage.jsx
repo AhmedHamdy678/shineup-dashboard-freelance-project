@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import providerAxiosClient from '../../api/providerAxiosClient';
 import ProviderPromotionsTable from './components/ProviderPromotionsTable';
 import ProviderPromotionForm from './components/ProviderPromotionForm';
@@ -20,7 +20,7 @@ export default function ProviderPromotionsPage() {
       });
       return response.data;
     },
-    keepPreviousData: true
+    placeholderData: keepPreviousData
   });
 
   const items = data?.items || [];

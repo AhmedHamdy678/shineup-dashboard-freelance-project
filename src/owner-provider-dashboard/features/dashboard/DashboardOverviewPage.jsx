@@ -1,6 +1,9 @@
 import React from "react";
-import { DollarSign, CalendarCheck, Star, Layers, Loader2 } from "lucide-react";
+import { DollarSign, CalendarCheck, Star, Layers, Wallet } from "lucide-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import toast from "react-hot-toast";
 import { useDashboardOverview } from "./useDashboardOverview";
+import { useWallet } from "../wallet/useWallet";
 import StatCard from "./components/StatCard";
 import TodayOperationsCard from "./components/TodayOperationsCard";
 import DashboardPendingView from "./DashboardPendingView";
@@ -13,6 +16,20 @@ export default function DashboardOverviewPage() {
   const isRejected = profileStatus === 'REJECTED';
 
   const { data, isLoading, isError } = useDashboardOverview();
+  const { data: walletData, isLoading: isWalletLoading, isError: isWalletError } = useWallet();
+  const queryClient = useQueryClient();
+
+  const { mutate: toggleAvailability, isPending: isToggling } = useMutation({
+    mutationFn: async (currentStatus) => {
+      // Mock API call
+      await new Promise(resolve => setTimeout(resolve, 500));
+      return !currentStatus;
+    },
+    onSuccess: () => {
+      toast.success("تم تحديث حالة الظهور بنجاح");
+      queryClient.invalidateQueries({ queryKey: ['provider-dashboard-overview'] });
+    }
+  });
 
   if (isPending) {
     return <DashboardPendingView />;
@@ -29,8 +46,8 @@ export default function DashboardOverviewPage() {
           <div className="h-8 bg-gray-200 rounded w-1/3"></div>
           <div className="h-8 bg-gray-200 rounded w-24"></div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 animate-pulse">
-          {[...Array(4)].map((_, i) => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 animate-pulse">
+          {[...Array(5)].map((_, i) => (
             <div key={i} className="h-32 bg-gray-200 rounded-xl"></div>
           ))}
         </div>
@@ -77,20 +94,35 @@ export default function DashboardOverviewPage() {
           <span className="text-sm font-medium text-gray-600">
             {provider.availableIs ? 'متاح' : 'غير متاح'}
           </span>
-          <div className={`w-12 h-6 rounded-full p-1 cursor-pointer transition-colors ${
-            provider.availableIs ? 'bg-emerald-500' : 'bg-gray-300'
-          }`}>
+          <button 
+            onClick={() => toggleAvailability(provider.availableIs)}
+            disabled={isToggling}
+            className={`w-12 h-6 rounded-full p-1 cursor-pointer transition-colors focus:outline-none disabled:opacity-50 ${
+              provider.availableIs ? 'bg-emerald-500' : 'bg-gray-300'
+            }`}
+          >
             <div className={`w-4 h-4 rounded-full bg-white shadow-sm transform transition-transform ${
               provider.availableIs ? '-translate-x-6' : 'translate-x-0'
             }`}></div>
-          </div>
+          </button>
         </div>
       </div>
 
       {/* Top KPIs Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+        {isWalletLoading ? (
+          <div className="h-[104px] bg-gray-100 rounded-xl animate-pulse border border-gray-100"></div>
+        ) : (
+          <StatCard
+            title="صافي الأرباح"
+            value={formatCurrency(walletData?.availableBalanceMinor || 0)}
+            icon={Wallet}
+            iconColor="text-purple-600"
+            iconBg="bg-purple-50"
+          />
+        )}
         <StatCard
-          title="إجمالي الأرباح (هذا الشهر)"
+          title="إجمالي المبيعات (هذا الشهر)"
           value={formatCurrency(payments.paidAmountThisMonth)}
           icon={DollarSign}
           iconColor="text-emerald-600"

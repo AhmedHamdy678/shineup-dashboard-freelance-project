@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { MapPin, Users, Activity, ArrowRight, Edit, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import providerAxiosClient from '../../../api/providerAxiosClient';
+import { getApiErrorMessage } from '../../../../admin-dashboard/api/axiosClient';
 
 export default function ZoneDetails({ zoneId, onBack, onEdit, onDeleteSuccess }) {
   const [zone, setZone] = useState(null);
@@ -18,7 +19,7 @@ export default function ZoneDetails({ zoneId, onBack, onEdit, onDeleteSuccess })
         setZone(response.data.item || response.data);
       } catch (err) {
         console.error('Failed to fetch zone details:', err);
-        setError('حدث خطأ أثناء جلب تفاصيل المنطقة.');
+        setError(getApiErrorMessage(err, 'حدث خطأ أثناء جلب تفاصيل المنطقة.'));
       } finally {
         setIsLoading(false);
       }
@@ -40,8 +41,7 @@ export default function ZoneDetails({ zoneId, onBack, onEdit, onDeleteSuccess })
         }
       } catch (err) {
         console.error('Failed to delete zone:', err);
-        const errorMessage = err.response?.data?.message || err.response?.data?.error || "حدث خطأ أثناء حذف المنطقة.";
-        toast.error(errorMessage);
+        toast.error(getApiErrorMessage(err, 'حدث خطأ أثناء حذف المنطقة.'));
         setIsDeleting(false);
       }
     }

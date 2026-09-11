@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import axiosClient from '../../api/axiosClient';
+import axiosClient, { getApiErrorMessage } from '../../api/axiosClient';
 import { formatBps, formatMinorUnits } from '../../../shared/utils/financialUtils';
 import { Percent, Calculator, Info, AlertCircle, Globe, X } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -93,8 +93,7 @@ export default function DeductionsPage() {
       fetchRules();
     } catch (err) {
       console.error('Failed to update global deduction', err);
-      const backendError = err.response?.data?.message || err.message;
-      toast.error(`خطأ: ${backendError}`);
+      toast.error(getApiErrorMessage(err, 'خطأ أثناء تحديث الخصم العام'));
     } finally {
       setIsUpdatingGlobal(false);
     }
@@ -157,8 +156,7 @@ export default function DeductionsPage() {
       fetchRules();
     } catch (err) {
       console.error('Failed to update type deduction', err);
-      const backendError = err.response?.data?.message || err.message;
-      toast.error(`خطأ: ${backendError}`);
+      toast.error(getApiErrorMessage(err, 'خطأ أثناء إعداد خصم لنوع المزود'));
     } finally {
       setIsUpdatingType(false);
     }
@@ -195,8 +193,7 @@ export default function DeductionsPage() {
       fetchRules();
     } catch (err) {
       console.error('Failed to update provider deduction', err);
-      const backendError = err.response?.data?.message || err.message;
-      toast.error(`خطأ: ${backendError}`);
+      toast.error(getApiErrorMessage(err, 'خطأ أثناء إعداد خصم خاص للمزود'));
     } finally {
       setIsUpdatingProvider(false);
     }
@@ -216,8 +213,7 @@ export default function DeductionsPage() {
       fetchRules();
     } catch (err) {
       console.error('Failed to toggle status', err);
-      const backendError = err.response?.data?.message || err.message;
-      toast.error(`خطأ: ${backendError}`);
+      toast.error(getApiErrorMessage(err, 'خطأ أثناء تحديث حالة القاعدة'));
     } finally {
       setToggleLoadingId(null);
     }
@@ -237,7 +233,7 @@ export default function DeductionsPage() {
       setSimulatorResult(res.data?.data || res.data);
     } catch (err) {
       console.error('Simulation failed', err);
-      setSimulatorError('فشل في حساب العمولة. يرجى التأكد من البيانات المدخلة.');
+      setSimulatorError(getApiErrorMessage(err, 'فشل في حساب العمولة. يرجى التأكد من البيانات المدخلة.'));
     } finally {
       setSimulatorLoading(false);
     }

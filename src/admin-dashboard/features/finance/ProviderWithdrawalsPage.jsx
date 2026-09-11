@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import axiosClient from '../../api/axiosClient';
+import axiosClient, { getApiErrorMessage } from '../../api/axiosClient';
 import toast from 'react-hot-toast';
 import { CreditCard, AlertCircle, FileText, Upload, CheckCircle2 } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
@@ -101,7 +101,7 @@ export default function ProviderWithdrawalsPage() {
       } else if (status === 403 || code === 'WITHDRAWAL_APPROVER_CANNOT_EXECUTE') {
         toast.error('غير مصرح لك بتنفيذ هذه العملية (فصل الصلاحيات)');
       } else {
-        toast.error('حدث خطأ أثناء حفظ بيانات الدفع');
+        toast.error(getApiErrorMessage(err, 'حدث خطأ أثناء حفظ بيانات الدفع'));
       }
     }
   });

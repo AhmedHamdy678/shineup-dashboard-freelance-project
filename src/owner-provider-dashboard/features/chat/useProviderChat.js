@@ -1,7 +1,7 @@
 /**
  * React Query hooks for provider chat conversations.
  */
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { getConversations, createConversation, sendMessage } from '../../api/chat.api';
 
 const getQueryKey = (type) => ['provider-conversations', type];
@@ -31,7 +31,7 @@ export function useProviderConversations(type = 'PROVIDER_SUPPORT', page = 1, li
       return response;
     },
     staleTime: 1000 * 60, // 1 minute — WebSocket handles live updates
-    keepPreviousData: true,
+    placeholderData: keepPreviousData,
   });
 
   const conversations = query.data?.items || query.data?.conversations || query.data?.data || (Array.isArray(query.data) ? query.data : []);

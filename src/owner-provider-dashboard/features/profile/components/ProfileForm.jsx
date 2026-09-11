@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { UploadCloud, Building2, MapPin, X, FileImage, FileText, ExternalLink } from 'lucide-react';
 import Card from '../../../../shared/components/ui/Card';
 import providerAxiosClient from '../../../api/providerAxiosClient';
+import { getApiErrorMessage } from '../../../../admin-dashboard/api/axiosClient';
 import toast from 'react-hot-toast';
 
 export function ProfileContactLocation({ profile, register, isEditMode }) {
@@ -406,7 +407,7 @@ function FileUploadZone({ label, name, existingUrl, register, watch, setValue, i
         if (status === 404) {
           toast.error('عذراً، لم يتم العثور على الملف في الخادم. قد يكون محمي أو تم حذفه.');
         } else {
-          toast.error(`خطأ أثناء فتح الملف: ${status}`);
+          toast.error(getApiErrorMessage(err, `خطأ أثناء فتح الملف`));
         }
         
         // Try fallback anyway

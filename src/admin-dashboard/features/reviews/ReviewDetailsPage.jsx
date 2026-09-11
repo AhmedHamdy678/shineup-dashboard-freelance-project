@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import axiosClient from '../../api/axiosClient';
+import axiosClient, { getApiErrorMessage } from '../../api/axiosClient';
 import { ArrowRight, Star, User, Building, Calendar, MessageSquare } from 'lucide-react';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
@@ -41,8 +41,8 @@ function useUpdateReviewVisibility() {
       queryClient.invalidateQueries({ queryKey: ['admin', 'reviews', 'analytics'] });
       toast.success(variables.visibleIs ? 'تم إظهار التقييم بنجاح' : 'تم إخفاء التقييم بنجاح');
     },
-    onError: () => {
-      toast.error('حدث خطأ أثناء التحديث');
+    onError: (error) => {
+      toast.error(getApiErrorMessage(error, 'حدث خطأ أثناء التحديث'));
     }
   });
 }

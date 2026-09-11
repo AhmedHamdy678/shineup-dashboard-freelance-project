@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X, Send, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { getApiErrorMessage } from '../../../../admin-dashboard/api/axiosClient';
 import { useCreateConversation } from '../useProviderChat';
 
 export default function NewInternalChatModal({ 
@@ -40,7 +41,7 @@ export default function NewInternalChatModal({
         },
         onError: (err) => {
           console.error("Failed to create internal conversation", err);
-          toast.error(err?.response?.data?.message || 'فشل إنشاء المحادثة');
+          toast.error(getApiErrorMessage(err, 'فشل إنشاء المحادثة'));
         }
       }
     );

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Wallet, Clock, Lock, ArrowUpRight, Landmark, Plus, AlertCircle } from "lucide-react";
 import { useWallet, usePayoutMethods, useAddPayoutMethod, useWithdrawalHistory, useRequestWithdrawal } from "./useWallet";
 import { v4 as uuidv4 } from 'uuid';
+import { getApiErrorMessage } from '../../../admin-dashboard/api/axiosClient';
 import toast from 'react-hot-toast';
 import Modal from "../../../shared/components/ui/Modal";
 import Pagination from "../../../shared/components/ui/Pagination";
@@ -64,22 +65,7 @@ export default function WalletPage() {
           });
         },
         onError: (err) => {
-          const data = err.response?.data;
-          let msg = data?.message || data?.error || err.message;
-          
-          if (Array.isArray(msg)) {
-            msg = msg.join(' | ');
-          }
-          
-          if (data?.errors) {
-            if (Array.isArray(data.errors)) {
-              msg = data.errors.map(e => typeof e === 'string' ? e : e.msg || JSON.stringify(e)).join(' | ');
-            } else if (typeof data.errors === 'object') {
-              msg = Object.values(data.errors).flat().join(' | ');
-            }
-          }
-          
-          toast.error(`حدث خطأ: ${msg}`);
+          toast.error(getApiErrorMessage(err, 'حدث خطأ أثناء إضافة الحساب البنكي'));
         }
       }
     );
@@ -116,8 +102,7 @@ export default function WalletPage() {
           });
         },
         onError: (err) => {
-          const msg = err.response?.data?.message || err.response?.data?.error || err.message;
-          toast.error(`حدث خطأ أثناء تقديم طلب السحب: ${msg}`);
+          toast.error(getApiErrorMessage(err, 'حدث خطأ أثناء تقديم طلب السحب'));
         }
       }
     );
@@ -271,7 +256,7 @@ export default function WalletPage() {
               }
 
               return (
-                <div key={method.id || Math.random()} className="bg-white border border-gray-200 rounded-xl p-5 relative shadow-sm hover:shadow-md transition-shadow">
+                <div key={method.id || `method-${index}`} className="bg-white border border-gray-200 rounded-xl p-5 relative shadow-sm hover:shadow-md transition-shadow">
                   <div className="absolute top-5 left-5" dir="rtl">
                     {statusBadge}
                   </div>

@@ -4,7 +4,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, CheckCircle2, Circle, Download, MapPin, User, Mail, Phone, FileText, Check, X } from 'lucide-react';
 import { useAdminProviderDetails } from './useProviders';
 import { approveProvider, rejectProvider } from '../../api/endpoints/providers.api';
-import axiosClient from '../../api/axiosClient';
+import axiosClient, { getApiErrorMessage } from '../../api/axiosClient';
 import toast from 'react-hot-toast';
 import ProviderMembersList from './ProviderMembersList';
 
@@ -46,7 +46,7 @@ export default function ProviderReviewPage() {
     },
     onError: (error) => {
       console.error('Approve Provider Error:', error?.response || error);
-      toast.error('حدث خطأ أثناء قبول المزود');
+      toast.error(getApiErrorMessage(error, 'حدث خطأ أثناء قبول المزود'));
     },
   });
 
@@ -61,7 +61,7 @@ export default function ProviderReviewPage() {
     },
     onError: (error) => {
       console.error('Reject Provider Error:', error?.response || error);
-      toast.error('حدث خطأ أثناء رفض المزود');
+      toast.error(getApiErrorMessage(error, 'حدث خطأ أثناء رفض المزود'));
     },
   });
 
@@ -88,7 +88,7 @@ export default function ProviderReviewPage() {
       link.remove();
     } catch (error) {
       console.error('Download Error:', error);
-      toast.error('حدث خطأ أثناء تحميل المستند. تأكد من صلاحياتك أو صحة المسار.');
+      toast.error(getApiErrorMessage(error, 'حدث خطأ أثناء تحميل المستند. تأكد من صلاحياتك أو صحة المسار.'));
     } finally {
       setIsDownloading(false);
     }

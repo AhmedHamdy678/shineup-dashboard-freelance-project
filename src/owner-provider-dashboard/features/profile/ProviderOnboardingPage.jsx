@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { Upload } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { getApiErrorMessage } from '../../../admin-dashboard/api/axiosClient';
 import { useSubmitOnboarding } from './hooks/useProviderProfileHooks';
 import useProviderAuthStore from '../../store/providerAuthStore';
 
@@ -61,18 +62,7 @@ export default function ProviderOnboardingPage() {
       },
       onError: (err) => {
         console.error("Onboarding Submit Error:", err);
-        const data = err?.response?.data;
-        let msg = data?.message || err?.message || 'حدث خطأ أثناء حفظ البيانات';
-        
-        if (Array.isArray(data?.message)) {
-          msg = data.message.join(' | ');
-        }
-        
-        if (data?.errors) {
-          msg += " - " + JSON.stringify(data.errors);
-        }
-
-        toast.error(msg, { duration: 6000 });
+        toast.error(getApiErrorMessage(err, 'حدث خطأ أثناء حفظ البيانات'), { duration: 6000 });
       }
     });
   };

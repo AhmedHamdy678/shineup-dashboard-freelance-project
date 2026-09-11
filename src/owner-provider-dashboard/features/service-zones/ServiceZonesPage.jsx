@@ -5,6 +5,7 @@ import ZoneForm from './components/ZoneForm';
 import ZoneDetails from './components/ZoneDetails';
 import { MapPin, Plus } from 'lucide-react';
 import providerAxiosClient from '../../api/providerAxiosClient';
+import { getApiErrorMessage } from '../../../admin-dashboard/api/axiosClient';
 
 export default function ServiceZonesPage() {
   const [zones, setZones] = useState([]);
@@ -31,7 +32,7 @@ export default function ServiceZonesPage() {
       setPagination(paginationData || { page, limit: 20, totalPages: 1, totalItems: 0 });
     } catch (err) {
       console.error('Failed to fetch service zones:', err);
-      setError('حدث خطأ أثناء جلب مناطق التغطية.');
+      setError(getApiErrorMessage(err, 'حدث خطأ أثناء جلب مناطق التغطية.'));
     } finally {
       setIsLoading(false);
     }

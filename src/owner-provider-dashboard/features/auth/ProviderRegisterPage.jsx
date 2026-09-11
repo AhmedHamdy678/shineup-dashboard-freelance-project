@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 import useProviderAuthStore from '../../store/providerAuthStore';
 import { useRegister, useVerifyOTP, useResendOTP } from './hooks/useProviderAuth';
 import toast from 'react-hot-toast';
+import { getApiErrorMessage } from '../../../admin-dashboard/api/axiosClient';
 
 export default function ProviderRegisterPage() {
   const navigate = useNavigate();
@@ -62,8 +63,7 @@ export default function ProviderRegisterPage() {
         toast.success('تم التسجيل بنجاح، يرجى إدخال رمز التحقق');
       },
       onError: (err) => {
-        const errorMsg = err?.response?.data?.message || err?.message || 'حدث خطأ أثناء التسجيل';
-        toast.error(errorMsg);
+        toast.error(getApiErrorMessage(err, 'حدث خطأ أثناء التسجيل'));
       }
     });
   };
@@ -79,7 +79,7 @@ export default function ProviderRegisterPage() {
         navigate('/login', { replace: true });
       },
       onError: (err) => {
-        toast.error(err?.response?.data?.message || 'رمز التحقق غير صحيح');
+        toast.error(getApiErrorMessage(err, 'رمز التحقق غير صحيح'));
       }
     });
   };
@@ -91,7 +91,7 @@ export default function ProviderRegisterPage() {
         setTimer(60);
       },
       onError: (err) => {
-        toast.error(err?.response?.data?.message || 'حدث خطأ، يرجى المحاولة لاحقاً');
+        toast.error(getApiErrorMessage(err, 'حدث خطأ، يرجى المحاولة لاحقاً'));
       }
     });
   };

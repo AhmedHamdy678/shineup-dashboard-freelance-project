@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
+import { getApiErrorMessage } from '../../api/axiosClient';
 import { approveCancellationRequest, rejectCancellationRequest } from '../../api/endpoints/cancellationRequests.api';
 
 export const useApproveCancellationRequest = () => {
@@ -13,16 +14,8 @@ export const useApproveCancellationRequest = () => {
       queryClient.invalidateQueries({ queryKey: ['admin-cancellation-requests'] });
     },
     onError: (error) => {
-      let errorMessage = error.response?.data?.message || 'حدث خطأ أثناء الموافقة على الطلب';
-      if (error.response?.data?.errors) {
-        const detailedErrors = Object.values(error.response.data.errors).flat();
-        if (detailedErrors.length > 0) {
-          errorMessage = detailedErrors.join('، ');
-        }
-      } else if (error.response?.data?.error) {
-        errorMessage = typeof error.response.data.error === 'string' ? error.response.data.error : errorMessage;
-      }
-      toast.error(errorMessage);
+      if (error.response?.status === 409) return; // Handled in component
+      toast.error(getApiErrorMessage(error, 'حدث خطأ أثناء الموافقة على الطلب'));
       console.error(error);
     }
   });
@@ -39,16 +32,8 @@ export const useRejectCancellationRequest = () => {
       queryClient.invalidateQueries({ queryKey: ['admin-cancellation-requests'] });
     },
     onError: (error) => {
-      let errorMessage = error.response?.data?.message || 'حدث خطأ أثناء رفض الطلب';
-      if (error.response?.data?.errors) {
-        const detailedErrors = Object.values(error.response.data.errors).flat();
-        if (detailedErrors.length > 0) {
-          errorMessage = detailedErrors.join('، ');
-        }
-      } else if (error.response?.data?.error) {
-        errorMessage = typeof error.response.data.error === 'string' ? error.response.data.error : errorMessage;
-      }
-      toast.error(errorMessage);
+      if (error.response?.status === 409) return; // Handled in component
+      toast.error(getApiErrorMessage(error, 'حدث خطأ أثناء رفض الطلب'));
       console.error(error);
     }
   });

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axiosClient from '../../api/axiosClient';
+import axiosClient, { getApiErrorMessage } from '../../api/axiosClient';
 import toast from 'react-hot-toast';
 import { Landmark, X, Plus } from 'lucide-react';
 
@@ -27,7 +27,7 @@ export default function PlatformBankAccountsPage() {
       setAccounts(Array.isArray(fetchedData) ? fetchedData : (fetchedData?.items || fetchedData?.data || []));
     } catch (err) {
       console.error('Failed to fetch platform accounts', err);
-      toast.error('حدث خطأ أثناء جلب الحسابات البنكية');
+      toast.error(getApiErrorMessage(err, 'حدث خطأ أثناء جلب الحسابات البنكية'));
     } finally {
       setLoading(false);
     }
@@ -62,8 +62,7 @@ export default function PlatformBankAccountsPage() {
       fetchAccounts();
     } catch (err) {
       console.error('Failed to add account', err);
-      const backendError = err.response?.data?.message || err.message;
-      toast.error(`خطأ: ${backendError}`);
+      toast.error(getApiErrorMessage(err, 'خطأ أثناء إضافة الحساب'));
     } finally {
       setIsSubmitting(false);
     }

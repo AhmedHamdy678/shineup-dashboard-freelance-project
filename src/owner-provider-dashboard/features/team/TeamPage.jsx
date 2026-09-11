@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Users, Plus, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
+import { getApiErrorMessage } from '../../../admin-dashboard/api/axiosClient';
 import { useTeam, useAddMember, useDeleteMember, useActivateMember, useSuspendMember } from "./useTeam";
 import StatCard from "../../../shared/components/ui/StatCard";
 import Pagination from "../../../shared/components/ui/Pagination";
@@ -43,8 +44,7 @@ export default function TeamPage() {
     };
     const onError = (err) => {
       console.error("Status Change Error inline:", err);
-      const msg = err.response?.data?.message || err.message || "فشل في تحديث حالة العضو";
-      toast.error(`خطأ: ${msg}`);
+      toast.error(getApiErrorMessage(err, 'فشل في تحديث حالة العضو'));
     };
 
     if (currentlyActive) {
@@ -67,8 +67,8 @@ export default function TeamPage() {
           setCurrentPage(maxPage);
         }
       },
-      onError: () => {
-        toast.error("فشل في حذف العضو");
+      onError: (error) => {
+        toast.error(getApiErrorMessage(error, 'فشل في حذف العضو'));
       }
     });
   };
@@ -81,8 +81,8 @@ export default function TeamPage() {
         setShowAddModal(false);
         setCurrentPage(1);
       },
-      onError: () => {
-        toast.error("فشل في إضافة العضو");
+      onError: (error) => {
+        toast.error(getApiErrorMessage(error, 'فشل في إضافة العضو'));
       }
     });
   };
