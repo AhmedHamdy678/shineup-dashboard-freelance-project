@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Calendar, Search, Filter, Clock, Car, MoreHorizontal, Eye } from "lucide-react";
+import { Calendar, Search, Filter, Clock, Car, MoreHorizontal, Eye, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useProviderBookings, useUpdateBookingStatus } from "./useProviderBookings";
 
@@ -16,6 +16,7 @@ const statusLabels = {
 export default function ProviderBookingsPage() {
   const [filter, setFilter] = useState("all");
   const [search, setSearch] = useState("");
+  const [selectedDate, setSelectedDate] = useState("");
   const [openMenuId, setOpenMenuId] = useState(null);
   const navigate = useNavigate();
   const dropdownRef = useRef(null);
@@ -40,6 +41,30 @@ export default function ProviderBookingsPage() {
     const serviceName = b.booking?.items?.[0]?.serviceName || b.serviceName || "";
     const matchesSearch = customerName.includes(search) || serviceName.includes(search);
     
+    let matchesDate = true;
+    if (selectedDate) {
+      let bDate = "";
+      if (b.booking?.scheduledAt) {
+        const d = new Date(b.booking.scheduledAt);
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        bDate = `${year}-${month}-${day}`;
+      } else if (b.date) {
+        // Handle formats like "2026/9/8" or "2026-09-08"
+        const parts = b.date.split(/[-/]/);
+        if (parts.length === 3) {
+          const year = parts[0].length === 4 ? parts[0] : parts[2];
+          const month = String(parts[1]).padStart(2, '0');
+          const day = String(parts[0].length === 4 ? parts[2] : parts[0]).padStart(2, '0');
+          bDate = `${year}-${month}-${day}`;
+        }
+      }
+      matchesDate = bDate === selectedDate;
+    }
+
+    if (!matchesDate) return false;
+    
     if (filter === "all") return matchesSearch;
     
     const status = (b.booking?.bookingStatus?.code || b.requestStatus?.code || b.status || "").toLowerCase();
@@ -47,12 +72,11 @@ export default function ProviderBookingsPage() {
     if (status.includes('cancel')) displayStatus = 'cancelled';
     else if (status.includes('accept') || status.includes('confirm')) displayStatus = 'confirmed';
     else if (status.includes('complet')) displayStatus = 'completed';
-    else if (status.includes('pend')) displayStatus = 'pending';
+    else if (status.includes('pend') || status.includes('request')) displayStatus = 'pending';
     
     return matchesSearch && displayStatus === filter;
   });
 
-  if (isLoading) return <div className="p-6 text-gray-500">جارٍ التحميل...</div>;
 
   return (
     <div className="space-y-6">
@@ -61,9 +85,22 @@ export default function ProviderBookingsPage() {
           <h1 className="text-3xl font-bold text-gray-900">الحجوزات</h1>
           <p className="text-gray-500 mt-1">إدارة جميع الحجوزات الواردة</p>
         </div>
-        <div className="flex items-center gap-2 text-sm text-gray-500 bg-white border border-gray-200 rounded-lg px-3 py-2">
-          <Calendar className="w-4 h-4" />
-          {new Date().toLocaleDateString("ar-EG")}
+        <div className="flex items-center gap-1 text-sm bg-white border border-gray-200 rounded-lg px-2 py-1 focus-within:ring-2 focus-within:ring-emerald-500 focus-within:border-emerald-500 transition-all">
+          <input
+            type="date"
+            value={selectedDate}
+            onChange={(e) => setSelectedDate(e.target.value)}
+            className="text-gray-700 bg-transparent outline-none cursor-pointer border-none py-1 px-2 focus:ring-0 min-w-[130px] [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-clear-button]:hidden"
+          />
+          {selectedDate && (
+            <button
+              onClick={() => setSelectedDate("")}
+              className="p-1.5 hover:bg-gray-100 rounded-full text-gray-400 hover:text-red-500 transition-colors"
+              title="إلغاء تصفية التاريخ"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
         </div>
       </div>
 
@@ -113,7 +150,11 @@ export default function ProviderBookingsPage() {
               </tr>
             </thead>
             <tbody>
-              {filtered.length === 0 ? (
+              {isLoading ? (
+                <tr>
+                  <td colSpan={9} className="text-center py-8 text-gray-500">جارٍ التحميل...</td>
+                </tr>
+              ) : filtered.length === 0 ? (
                 <tr>
                   <td colSpan={9} className="text-center py-8 text-gray-400">لا توجد حجوزات</td>
                 </tr>
@@ -235,7 +276,9 @@ export default function ProviderBookingsPage() {
 
         {/* Mobile Card View */}
         <div className="md:hidden divide-y divide-gray-100">
-          {filtered.length === 0 ? (
+          {isLoading ? (
+            <div className="text-center py-8 text-gray-500">جارٍ التحميل...</div>
+          ) : filtered.length === 0 ? (
             <div className="text-center py-8 text-gray-400">لا توجد حجوزات</div>
           ) : filtered.map((b, index) => {
             const bookingCode = b.booking?.codeBooking || b.bookingId || `#BKG-${typeof b.id === 'string' ? b.id.substring(0, 8) : b.id}`;

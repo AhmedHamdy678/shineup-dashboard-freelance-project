@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import axiosClient from '../../api/axiosClient';
 import toast from 'react-hot-toast';
 import { ArrowRight, AlertTriangle, CreditCard, Landmark, Copy, Check, Info } from 'lucide-react';
 import ApproveWithdrawalModal from './ApproveWithdrawalModal';
 import ProviderWithdrawalsHistoryTable from './ProviderWithdrawalsHistoryTable';
+import Modal from '../../../shared/components/ui/Modal';
 
 const statusConfig = {
   APPROVED: { label: 'بانتظار الدفع', color: 'bg-blue-100 text-blue-700' },
@@ -21,6 +22,32 @@ export default function WithdrawalRequestDetailsPage() {
   const queryClient = useQueryClient();
   const [copied, setCopied] = useState(false);
   const [isApproveModalOpen, setIsApproveModalOpen] = useState(false);
+  const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
+  const [adminNote, setAdminNote] = useState('');
+
+  const rejectMutation = useMutation({
+    mutationFn: async () => {
+      await axiosClient.post(`/admin/provider-withdrawals/${id}/reject`, 
+        { adminNote: adminNote.trim() || undefined },
+        {
+          headers: {
+            'Idempotency-Key': `withdrawal-reject-${id}-${Date.now()}`
+          }
+        }
+      );
+    },
+    onSuccess: () => {
+      setIsRejectModalOpen(false);
+      setAdminNote('');
+      toast.success('تم رفض طلب السحب بنجاح');
+      queryClient.invalidateQueries({ queryKey: ['provider-withdrawal', id] });
+      queryClient.invalidateQueries({ queryKey: ['provider-withdrawals'] });
+    },
+    onError: (error) => {
+      toast.error(error?.response?.data?.message || 'حدث خطأ أثناء رفض الطلب');
+      console.error(error);
+    }
+  });
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ['provider-withdrawal', id],
@@ -175,10 +202,15 @@ export default function WithdrawalRequestDetailsPage() {
       {req.status === 'REQUESTED' && !req.provider?.financiallyBlocked && (
          <div className="mt-8 bg-white border-t border-gray-100 p-6 rounded-xl shadow-sm flex items-center justify-end gap-4">
            <button 
-              disabled
-              className="px-6 py-2.5 text-sm font-medium text-gray-400 bg-gray-50 border border-gray-200 rounded-lg cursor-not-allowed"
+              onClick={() => setIsRejectModalOpen(true)}
+              disabled={rejectMutation.isPending}
+              className={`px-6 py-2.5 text-sm font-medium border rounded-lg transition-colors ${
+                rejectMutation.isPending 
+                  ? 'text-gray-400 bg-gray-50 border-gray-200 cursor-not-allowed'
+                  : 'text-red-700 bg-white border-red-200 hover:bg-red-50 hover:border-red-300'
+              }`}
             >
-              رفض الطلب (قريباً)
+              {rejectMutation.isPending ? 'جارٍ الرفض...' : 'رفض الطلب'}
             </button>
             <button 
               onClick={() => setIsApproveModalOpen(true)}
@@ -205,6 +237,49 @@ export default function WithdrawalRequestDetailsPage() {
         withdrawalId={id}
         onSuccess={() => queryClient.invalidateQueries({ queryKey: ['provider-withdrawal', id] })}
       />
+
+      {isRejectModalOpen && (
+        <Modal 
+          title="تأكيد رفض طلب السحب" 
+          onClose={() => !rejectMutation.isPending && setIsRejectModalOpen(false)}
+          size="sm"
+        >
+          <div className="text-center py-4">
+            <div className="mx-auto w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-4">
+              <AlertTriangle className="w-6 h-6 text-red-600" />
+            </div>
+            <p className="text-gray-900 font-medium mb-1">هل أنت متأكد من رفض طلب السحب؟</p>
+            <p className="text-sm text-gray-500 mb-4">لا يمكن التراجع عن هذا الإجراء، وسيتم إرجاع المبلغ إلى رصيد المزود.</p>
+            
+            <div className="mb-6 text-right">
+              <label className="block text-sm font-medium text-gray-700 mb-2">سبب الرفض (ملاحظة إدارية)</label>
+              <textarea 
+                value={adminNote}
+                onChange={(e) => setAdminNote(e.target.value)}
+                placeholder="اكتب سبب الرفض هنا..."
+                className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-red-500 focus:border-red-500 outline-none transition-colors min-h-[80px]"
+              />
+            </div>
+            
+            <div className="flex items-center gap-3 w-full">
+              <button 
+                onClick={() => setIsRejectModalOpen(false)}
+                disabled={rejectMutation.isPending}
+                className="flex-1 py-2.5 px-4 bg-gray-50 text-gray-700 hover:bg-gray-100 font-medium rounded-lg transition-colors border border-gray-200"
+              >
+                تراجع
+              </button>
+              <button 
+                onClick={() => rejectMutation.mutate()}
+                disabled={rejectMutation.isPending}
+                className="flex-1 py-2.5 px-4 bg-red-600 text-white hover:bg-red-700 font-medium rounded-lg transition-colors disabled:opacity-50"
+              >
+                {rejectMutation.isPending ? 'جاري الرفض...' : 'تأكيد الرفض'}
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 }
