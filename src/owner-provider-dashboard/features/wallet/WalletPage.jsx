@@ -26,7 +26,7 @@ export default function WalletPage() {
 
   const [isAddBankModalOpen, setIsAddBankModalOpen] = useState(false);
   const [bankForm, setBankForm] = useState({
-    beneficiaryType: 'INDIVIDUAL',
+    beneficiaryType: 'COMPANY',
     bankName: '',
     accountHolderName: '',
     iban: '',
@@ -44,6 +44,7 @@ export default function WalletPage() {
       {
         payload: {
           ...bankForm,
+          beneficiaryType: 'COMPANY',
           iban: cleanIban,
           type: 'BANK_ACCOUNT',
           beneficiaryCountry: 'SA',
@@ -56,7 +57,7 @@ export default function WalletPage() {
           toast.success('تمت إضافة الحساب البنكي بنجاح، وهو الآن قيد المراجعة');
           setIsAddBankModalOpen(false);
           setBankForm({
-            beneficiaryType: 'INDIVIDUAL',
+            beneficiaryType: 'COMPANY',
             bankName: '',
             accountHolderName: '',
             iban: '',
@@ -378,15 +379,12 @@ export default function WalletPage() {
           <form onSubmit={handleAddBankSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">نوع المستفيد <span className="text-red-500">*</span></label>
-              <select
-                required
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                value={bankForm.beneficiaryType}
-                onChange={(e) => setBankForm({ ...bankForm, beneficiaryType: e.target.value })}
-              >
-                <option value="INDIVIDUAL">فرد</option>
-                <option value="COMPANY">شركة</option>
-              </select>
+              <input
+                type="text"
+                disabled
+                className="w-full px-3 py-2 border border-gray-200 bg-gray-50 text-gray-500 rounded-lg cursor-not-allowed"
+                value="شركة"
+              />
             </div>
 
             <div>
