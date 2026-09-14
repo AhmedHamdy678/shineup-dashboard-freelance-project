@@ -162,13 +162,22 @@ export default function LoginPage() {
               {loading ? 'جاري تسجيل الدخول...' : 'تسجيل الدخول'}
             </button>
 
-            <p className="mt-6 text-center text-sm text-gray-600">
+            <p className="mt-4 text-center text-sm text-gray-600">
               هل ترغب بالانضمام كمزود خدمة؟{' '}
               <Link
                 to="/provider/register"
                 className="text-blue-600 hover:underline font-semibold transition"
               >
                 إنشاء حساب
+              </Link>
+            </p>
+            <p className="mt-2 text-center text-sm text-gray-600">
+              هل أنت مشرف جديد؟{' '}
+              <Link
+                to="/auth/staff/activate"
+                className="text-blue-600 hover:underline font-semibold transition"
+              >
+                تفعيل حسابك
               </Link>
             </p>
             <div className="text-xs text-gray-500 mt-6 text-center">
