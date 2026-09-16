@@ -95,13 +95,28 @@ export default function NotificationCard({ notification, onDelete }) {
       case 'REVIEW_RECEIVED': navigate('/provider/reviews'); break;
       case 'BOOKING_CONFIRMED':
       case 'BOOKING_CANCELLED': navigate('/provider/bookings'); break;
-      case 'PAYMENT_RECEIVED': navigate('/provider/wallet'); break;
+      case 'BOOKING_PAID':
+        navigate(notification.entityId ? `/provider/bookings/${notification.entityId}` : '/provider/bookings');
+        break;
+      case 'PAYMENT_RECEIVED':
+      case 'PAYOUT_METHOD_APPROVED':
+      case 'PAYOUT_METHOD_REJECTED':
+      case 'WITHDRAWAL_REQUESTED':
+      case 'WITHDRAWAL_APPROVED':
+      case 'WITHDRAWAL_REJECTED':
+      case 'WITHDRAWAL_PAID':
+        navigate('/provider/wallet');
+        break;
       case 'TEAM_MEMBER_ADDED': navigate('/provider/team'); break;
       case 'PROVIDER_REJECTED': navigate('/provider/profile'); break;
       default:
         // Fallback checks for title/body content
         if (title?.includes('دعم') || body?.includes('رسالة')) {
           navigate('/provider/chat', conversationId ? { state: { conversationId, tab: 'ADMIN' } } : undefined);
+        } else if (title?.includes('سحب') || title?.includes('الصرف') || title?.includes('المحفظة')) {
+          navigate('/provider/wallet');
+        } else if (title?.includes('دفع الحجز') || title?.includes('حجز')) {
+          navigate(notification.entityId ? `/provider/bookings/${notification.entityId}` : '/provider/bookings');
         }
         break;
     }

@@ -94,7 +94,6 @@ export default function ReviewsPage() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="font-medium text-gray-900 flex items-center gap-2">
-                        {item.provider?.nameBusiness}
                         {item.provider?.typeProvider === 'COMPANY' ? (
                           <span className="bg-blue-50 text-blue-700 text-[10px] px-2 py-0.5 rounded-full font-bold">
                             شركة
@@ -105,8 +104,12 @@ export default function ReviewsPage() {
                           </span>
                         )}
                       </div>
+                      <div className="text-gray-800 text-sm font-semibold mt-1">
+                        {item.provider?.typeProvider === 'COMPANY' ? 'الشركة: ' : ''}
+                        {item.provider?.nameBusinessAr || item.provider?.nameBusinessEn}
+                      </div>
                       <div className="text-gray-500 text-xs mt-1">
-                        الفني: {item.providerMember?.displayName}
+                        الفني: {item.providerMember?.displayName || item.providerMember?.fullName}
                       </div>
                     </td>
                     <td className="px-6 py-4">

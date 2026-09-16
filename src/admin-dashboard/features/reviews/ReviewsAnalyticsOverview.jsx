@@ -132,8 +132,10 @@ export default function ReviewsAnalyticsOverview() {
                   <div key={item.providerId} className="flex justify-between items-center">
                     <div className="flex items-center gap-3">
                       <span className="w-5 font-bold text-gray-400">{idx + 1}.</span>
-                      <div>
-                        <p className="text-sm font-medium text-gray-900">{item.provider?.nameBusiness}</p>
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-medium text-gray-900">
+                          {item.provider?.nameBusinessAr || item.provider?.nameBusinessEn || 'غير محدد'}
+                        </p>
                         <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold ${
                           item.provider?.typeProvider === 'COMPANY' 
                             ? 'bg-blue-50 text-blue-700' 
@@ -168,7 +170,7 @@ export default function ReviewsAnalyticsOverview() {
                     <div className="flex items-center gap-3">
                       <span className="w-5 font-bold text-gray-400">{idx + 1}.</span>
                       <p className="text-sm font-medium text-gray-900">
-                        {item.providerMember?.operationalProfile?.displayNameAr || item.providerMember?.fullName}
+                        {item.providerMember?.operationalProfile?.displayName || item.providerMember?.user?.fullName || "اسم غير متوفر"}
                       </p>
                     </div>
                     <div className="flex items-center gap-1 font-semibold text-gray-800">

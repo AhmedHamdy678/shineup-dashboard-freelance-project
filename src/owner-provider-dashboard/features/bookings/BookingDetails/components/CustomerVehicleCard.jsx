@@ -1,4 +1,4 @@
-import { User, Phone, Mail, Car } from "lucide-react";
+import { User, Car } from "lucide-react";
 
 export default function CustomerVehicleCard({ customer, car }) {
   return (
@@ -14,14 +14,6 @@ export default function CustomerVehicleCard({ customer, car }) {
             <h3 className="text-sm font-medium text-gray-500 mb-1">العميل</h3>
             <p className="text-lg font-semibold text-gray-900">{customer?.fullName}</p>
             <p className="text-sm text-gray-500 mt-1" dir="ltr">{customer?.phone}</p>
-            <div className="flex gap-2 mt-4">
-              <button className="p-2 bg-gray-50 hover:bg-gray-100 text-gray-600 rounded-lg transition-colors border border-gray-200 shadow-sm">
-                <Phone className="w-4 h-4" />
-              </button>
-              <button className="p-2 bg-gray-50 hover:bg-gray-100 text-gray-600 rounded-lg transition-colors border border-gray-200 shadow-sm">
-                <Mail className="w-4 h-4" />
-              </button>
-            </div>
           </div>
         </div>
         

@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { getBookings } from '../../api/endpoints/bookings.api';
 import { useServices } from '../services/useServices';
 import Pagination from '../../../shared/components/ui/Pagination';
@@ -8,6 +9,7 @@ import { useState } from 'react';
 
 const statusVariant = {
   PENDING: 'warning',
+  PENDING_PROVIDER_ACCEPTANCE: 'warning',
   CONFIRMED: 'info',
   IN_PROGRESS: 'info',
   COMPLETED: 'success',
@@ -16,10 +18,14 @@ const statusVariant = {
   PAYMENT_EXPIRED: 'warning',
   CANCELLED_BY_CUSTOMER: 'danger',
   CANCELLED_BY_PROVIDER: 'danger',
+  REJECTED_BY_PROVIDER: 'danger',
+  PENDING_PAYMENT: 'warning',
+  NO_PROVIDERS_AVAILABLE: 'default',
 };
 
 const statusTranslations = {
   PENDING: 'قيد الانتظار',
+  PENDING_PROVIDER_ACCEPTANCE: 'بانتظار قبول المزود',
   CONFIRMED: 'مؤكد',
   IN_PROGRESS: 'قيد التنفيذ',
   COMPLETED: 'مكتمل',
@@ -28,11 +34,15 @@ const statusTranslations = {
   PAYMENT_EXPIRED: 'انتهت صلاحية الدفع',
   CANCELLED_BY_CUSTOMER: 'أُلغي من قبل العميل',
   CANCELLED_BY_PROVIDER: 'أُلغي من قبل المزود',
+  REJECTED_BY_PROVIDER: 'مرفوض من المزود',
+  PENDING_PAYMENT: 'بانتظار الدفع',
+  NO_PROVIDERS_AVAILABLE: 'لا يوجد مزودون',
 };
 
 export default function BookingsPage() {
   const [page, setPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState('');
+  const navigate = useNavigate();
   const limit = 20;
 
   const { data: services } = useServices();
@@ -103,13 +113,13 @@ export default function BookingsPage() {
           <table className="w-full min-w-[900px] text-sm text-right" style={{ tableLayout: 'fixed' }}>
             <colgroup>
               <col style={{ width: '3%' }} />
-              <col style={{ width: '14%' }} />
+              <col style={{ width: '12%' }} />
               <col style={{ width: '9%' }} />
               <col style={{ width: '22%' }} />
               <col style={{ width: '16%' }} />
               <col style={{ width: '16%' }} />
               <col style={{ width: '9%' }} />
-              <col style={{ width: '11%' }} />
+              <col style={{ width: '13%' }} />
             </colgroup>
             <thead className="bg-gray-50 border-b border-gray-100">
               <tr>
@@ -138,7 +148,12 @@ export default function BookingsPage() {
                 const amount = row.amount ?? row.totalAmount;
 
                 return (
-                  <tr key={row.id} className="hover:bg-gray-50 transition-colors">
+                  <tr
+                    key={row.id}
+                    className="hover:bg-blue-50/60 transition-colors cursor-pointer"
+                    onClick={() => navigate(`/admin/bookings/${row.id}`)}
+                    title="عرض تفاصيل الحجز"
+                  >
                     <td className="px-4 py-3 text-center text-gray-500">{row._rowNumber}</td>
                     <td className="px-3 py-3 text-center">
                       <span className="text-xs font-mono text-blue-600 truncate block" title={row.code || row.codeBooking}>
@@ -165,8 +180,65 @@ export default function BookingsPage() {
                     <td className="px-3 py-3 text-center text-gray-700">
                       {amount != null ? `${Number(amount).toFixed(2)} ر.س` : '—'}
                     </td>
-                    <td className="px-4 py-3 text-center text-gray-500 text-xs">
-                      {row.createdAt ? formatDate(row.createdAt) : '—'}
+                    <td className="px-4 py-3 text-center">
+                      {row.bookingMethod === 'SCHEDULED' ? (
+                        <div className="flex flex-col items-center gap-1">
+                          <span style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '3px',
+                            backgroundColor: '#ede9fe',
+                            color: '#6d28d9',
+                            fontSize: '10px',
+                            fontWeight: '600',
+                            padding: '2px 7px',
+                            borderRadius: '999px',
+                            letterSpacing: '0.02em',
+                          }}>
+                            <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                              <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+                            </svg>
+                            مجدول
+                          </span>
+                          <div className="text-xs font-semibold text-gray-800 leading-tight">
+                            {row.scheduledAt ? (
+                              <>
+                                <span className="text-purple-700 block" style={{ fontSize: '10px', fontWeight: '500', marginBottom: '1px' }}>موعد التنفيذ</span>
+                                {formatDate(row.scheduledAt)}
+                              </>
+                            ) : '—'}
+                          </div>
+                          {row.createdAt && (
+                            <div className="text-gray-400 leading-tight" style={{ fontSize: '10px' }}>
+                              <span className="block" style={{ fontSize: '9px' }}>تاريخ الطلب</span>
+                              {formatDate(row.createdAt)}
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center gap-1">
+                          <span style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '3px',
+                            backgroundColor: '#dcfce7',
+                            color: '#15803d',
+                            fontSize: '10px',
+                            fontWeight: '600',
+                            padding: '2px 7px',
+                            borderRadius: '999px',
+                            letterSpacing: '0.02em',
+                          }}>
+                            <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                              <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                            </svg>
+                            فوري
+                          </span>
+                          <div className="text-xs text-gray-600 leading-tight">
+                            {row.createdAt ? formatDate(row.createdAt) : '—'}
+                          </div>
+                        </div>
+                      )}
                     </td>
                   </tr>
                 );

@@ -3,6 +3,7 @@ import { Users, Plus, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 import { getApiErrorMessage } from '../../../admin-dashboard/api/axiosClient';
 import { useTeam, useAddMember, useDeleteMember, useActivateMember, useSuspendMember } from "./useTeam";
+import useProviderAuth from "../../hooks/useProviderAuth";
 import StatCard from "../../../shared/components/ui/StatCard";
 import Pagination from "../../../shared/components/ui/Pagination";
 import Modal from "../../../shared/components/ui/Modal";
@@ -10,6 +11,7 @@ import MemberModal from "./MemberModal";
 import MemberTable from "./MemberTable";
 
 export default function TeamPage() {
+  const { user: currentUser } = useProviderAuth();
   const { data: teamData, isLoading } = useTeam();
   const members = Array.isArray(teamData) ? teamData : (teamData?.items || []);
   const { mutate: addMember, isPending: addingMember } = useAddMember();
@@ -25,8 +27,10 @@ export default function TeamPage() {
 
   const pageSize = 6;
 
-  const totalMembers = members.length;
-  const activeNow = members.filter((m) => (m.userIsActive ?? (m.status === "ACTIVE"))).length;
+  // Stats excluding the OWNER
+  const nonOwnerMembers = members.filter(m => !(m.userId === currentUser?.id || m.role === 'OWNER'));
+  const totalMembers = nonOwnerMembers.length;
+  const activeNow = nonOwnerMembers.filter((m) => (m.userIsActive ?? (m.status === "ACTIVE"))).length;
 
   // Pagination calculations
   const totalResults = members.length;
@@ -115,16 +119,16 @@ export default function TeamPage() {
       {/* Stats Cards Section */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl">
         <StatCard
-          label="إجمالي الأعضاء"
+          title="إجمالي الأعضاء"
           value={totalMembers}
           icon={Users}
-          iconColor="text-blue-500"
+          color="blue"
         />
         <StatCard
-          label="نشط حالياً"
+          title="نشط حالياً"
           value={activeNow}
           icon={Users}
-          iconColor="text-emerald-500"
+          color="green"
         />
       </div>
 

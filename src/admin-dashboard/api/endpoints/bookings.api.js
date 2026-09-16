@@ -3,8 +3,7 @@
  * Supports toggle between Mock Data and Real API.
  */
 import axiosClient from '../axiosClient';
-// 1. استيراد البيانات الوهمية الخاصة بالحجوزات (تخيل أنك أنشأت هذا الملف)
-import { mockBookings } from '../../mocks/bookings.mock';
+import { mockBookings, mockBookingDetails } from '../../mocks/bookings.mock';
 
 // 2. قراءة حالة المفتاح من ملف الـ .env
 const useMock = import.meta.env.VITE_USE_MOCK_DATA === "true";
@@ -18,5 +17,15 @@ export const getBookings = async (params = {}) => {
 
   // 4. إذا كان مقفلاً، اذهب للباك إند الحقيقي
   const { data } = await axiosClient.get('/admin/bookings', { params });
+  return data;
+};
+
+/** GET /admin/bookings/:id — fetch a single booking's full details. */
+export const getBookingById = async (bookingId) => {
+  if (useMock) {
+    const fromList = mockBookings.items.find((b) => b.id === bookingId);
+    return Promise.resolve(mockBookingDetails[bookingId] || fromList || null);
+  }
+  const { data } = await axiosClient.get(`/admin/bookings/${bookingId}`);
   return data;
 };

@@ -5,7 +5,6 @@ import CustomerVehicleCard from "./components/CustomerVehicleCard";
 import LocationCard from "./components/LocationCard";
 import InvoiceTable from "./components/InvoiceTable";
 import ScheduleAssignmentCard from "./components/ScheduleAssignmentCard";
-import SupportActionsSidebar from "./components/SupportActionsSidebar";
 import { getProviderBookingById } from "../../../api/endpoints/providerBookings.api";
 
 export default function ProviderBookingDetailsPage() {
@@ -70,7 +69,6 @@ export default function ProviderBookingDetailsPage() {
             bookingTimeMode={data?.booking?.bookingTimeMode}
             targetedProviderMember={data?.targetedProviderMember}
           />
-          <SupportActionsSidebar />
         </div>
 
       </div>

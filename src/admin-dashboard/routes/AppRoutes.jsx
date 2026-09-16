@@ -5,9 +5,11 @@ import ProtectedRoute from "./ProtectedRoute";
 import PageSkeleton from "../../shared/components/ui/PageSkeleton";
 import ProviderLayout from "../../owner-provider-dashboard/components/layout/ProviderLayout";
 import ProviderProtectedRoute from "../../owner-provider-dashboard/routes/ProviderProtectedRoute";
+import SuperAdminGuard from "./SuperAdminGuard";
 
 const LoginPage = lazy(() => import("../features/auth/LoginPage"));
 const ForgotPasswordPage = lazy(() => import("../features/auth/ForgotPasswordPage"));
+const StaffActivationPage = lazy(() => import("../features/auth/StaffActivationPage"));
 const DashboardPage = lazy(() => import("../features/dashboard/DashboardPage"));
 const ProvidersPage = lazy(() => import("../features/providers/ProvidersPage"));
 const ProviderManagementPage = lazy(() => import("../features/provider-management/ProviderManagementPage"));
@@ -15,10 +17,19 @@ const ProviderReviewPage = lazy(() => import("../features/providers/ProviderRevi
 const CustomersPage = lazy(() => import("../features/customers/CustomersPage"));
 const CustomerDetailsPage = lazy(() => import("../features/customers/CustomerDetailsPage"));
 const BookingsPage = lazy(() => import("../features/bookings/BookingsPage"));
+const BookingDetailsPage = lazy(() => import("../features/bookings/BookingDetailsPage"));
 const ReviewsPage = lazy(() => import("../features/reviews/ReviewsPage"));
 const ReviewDetailsPage = lazy(() => import("../features/reviews/ReviewDetailsPage"));
 const ChatPage = lazy(() => import("../features/chat/admin/AdminChatPage"));
 const SettingsPage = lazy(() => import("../features/settings/SettingsPage"));
+const SettingsLayout = lazy(() => import("../features/settings/SettingsLayout"));
+const AuthorizationOverview = lazy(() => import("../features/settings/AuthorizationOverview"));
+const AdminsPage = lazy(() => import("../features/settings/AdminsPage"));
+const AdminDetailsPage = lazy(() => import("../features/settings/AdminDetailsPage"));
+const RolesPage = lazy(() => import("../features/settings/RolesPage"));
+const RoleDetailsPage = lazy(() => import("../features/settings/RoleDetailsPage"));
+const PermissionsPage = lazy(() => import("../features/settings/PermissionsPage"));
+const AuditLogPage = lazy(() => import("../features/settings/AuditLogPage"));
 const CategoriesPage = lazy(() => import("../features/categories/CategoriesPage"));
 const ServicesPage = lazy(() => import("../features/services/ServicesPage"));
 const DeductionsPage = lazy(() => import("../features/deductions/DeductionsPage"));
@@ -65,6 +76,7 @@ export default function AppRoutes() {
       <Route path="/" element={<Navigate to="/admin" replace />} />
       <Route path="/login" element={<SuspenseWrapper><LoginPage /></SuspenseWrapper>} />
       <Route path="/forgot-password" element={<SuspenseWrapper><ForgotPasswordPage /></SuspenseWrapper>} />
+      <Route path="/auth/staff/activate" element={<SuspenseWrapper><StaffActivationPage /></SuspenseWrapper>} />
       <Route path="/provider/login" element={<SuspenseWrapper><ProviderLoginPage /></SuspenseWrapper>} />
       <Route path="/provider/register" element={<SuspenseWrapper><ProviderRegisterPage /></SuspenseWrapper>} />
       
@@ -87,12 +99,23 @@ export default function AppRoutes() {
           <Route path="customers" element={<SuspenseWrapper><CustomersPage /></SuspenseWrapper>} />
           <Route path="customers/:customerId" element={<SuspenseWrapper><CustomerDetailsPage /></SuspenseWrapper>} />
           <Route path="bookings" element={<SuspenseWrapper><BookingsPage /></SuspenseWrapper>} />
+          <Route path="bookings/:bookingId" element={<SuspenseWrapper><BookingDetailsPage /></SuspenseWrapper>} />
           <Route path="reviews" element={<SuspenseWrapper><ReviewsPage /></SuspenseWrapper>} />
           <Route path="reviews/:id" element={<SuspenseWrapper><ReviewDetailsPage /></SuspenseWrapper>} />
           <Route path="categories" element={<SuspenseWrapper><CategoriesPage /></SuspenseWrapper>} />
           <Route path="services" element={<SuspenseWrapper><ServicesPage /></SuspenseWrapper>} />
           <Route path="chat" element={<SuspenseWrapper><ChatPage /></SuspenseWrapper>} />
-          <Route path="settings" element={<SuspenseWrapper><SettingsPage /></SuspenseWrapper>} />
+          <Route path="settings" element={<SuperAdminGuard><SuspenseWrapper><SettingsLayout /></SuspenseWrapper></SuperAdminGuard>}>
+            <Route index element={<Navigate to="access/overview" replace />} />
+            <Route path="access/overview" element={<SuspenseWrapper><AuthorizationOverview /></SuspenseWrapper>} />
+            <Route path="access/admins" element={<SuspenseWrapper><AdminsPage /></SuspenseWrapper>} />
+            <Route path="access/admins/:userId" element={<SuspenseWrapper><AdminDetailsPage /></SuspenseWrapper>} />
+            <Route path="access/roles" element={<SuspenseWrapper><RolesPage /></SuspenseWrapper>} />
+            <Route path="access/roles/:roleId" element={<SuspenseWrapper><RoleDetailsPage /></SuspenseWrapper>} />
+            <Route path="access/permissions" element={<SuspenseWrapper><PermissionsPage /></SuspenseWrapper>} />
+            <Route path="access/audit-log" element={<SuspenseWrapper><AuditLogPage /></SuspenseWrapper>} />
+            <Route path="system" element={<SuspenseWrapper><SettingsPage /></SuspenseWrapper>} />
+          </Route>
           <Route path="deductions" element={<SuspenseWrapper><DeductionsPage /></SuspenseWrapper>} />
           <Route path="deductions/:ruleId" element={<SuspenseWrapper><DeductionRuleDetailsPage /></SuspenseWrapper>} />
           <Route path="finance-overview" element={<SuspenseWrapper><FinanceOverviewPage /></SuspenseWrapper>} />
