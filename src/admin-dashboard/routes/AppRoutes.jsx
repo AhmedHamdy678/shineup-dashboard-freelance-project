@@ -17,6 +17,7 @@ const ProviderReviewPage = lazy(() => import("../features/providers/ProviderRevi
 const CustomersPage = lazy(() => import("../features/customers/CustomersPage"));
 const CustomerDetailsPage = lazy(() => import("../features/customers/CustomerDetailsPage"));
 const BookingsPage = lazy(() => import("../features/bookings/BookingsPage"));
+const BookingDetailsPage = lazy(() => import("../features/bookings/BookingDetailsPage"));
 const ReviewsPage = lazy(() => import("../features/reviews/ReviewsPage"));
 const ReviewDetailsPage = lazy(() => import("../features/reviews/ReviewDetailsPage"));
 const ChatPage = lazy(() => import("../features/chat/admin/AdminChatPage"));
@@ -98,6 +99,7 @@ export default function AppRoutes() {
           <Route path="customers" element={<SuspenseWrapper><CustomersPage /></SuspenseWrapper>} />
           <Route path="customers/:customerId" element={<SuspenseWrapper><CustomerDetailsPage /></SuspenseWrapper>} />
           <Route path="bookings" element={<SuspenseWrapper><BookingsPage /></SuspenseWrapper>} />
+          <Route path="bookings/:bookingId" element={<SuspenseWrapper><BookingDetailsPage /></SuspenseWrapper>} />
           <Route path="reviews" element={<SuspenseWrapper><ReviewsPage /></SuspenseWrapper>} />
           <Route path="reviews/:id" element={<SuspenseWrapper><ReviewDetailsPage /></SuspenseWrapper>} />
           <Route path="categories" element={<SuspenseWrapper><CategoriesPage /></SuspenseWrapper>} />
