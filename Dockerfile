@@ -10,7 +10,7 @@ RUN npm ci
 COPY . .
 
 ARG VITE_API_BASE_URL=/api/v1
-ARG VITE_SOCKET_URL=https://api-dev.shineupapp.tech
+ARG VITE_SOCKET_URL=https://api.example-company.tech
 ARG VITE_USE_MOCK_DATA=false
 
 ENV VITE_API_BASE_URL=${VITE_API_BASE_URL} \
@@ -22,7 +22,7 @@ RUN test -f dist/index.html
 
 FROM nginx:1.27-alpine AS runner
 
-ENV BACKEND_ORIGIN=https://api-dev.shineupapp.tech
+ENV BACKEND_ORIGIN=https://api.example-company.tech
 
 COPY nginx/default.conf.template /etc/nginx/templates/default.conf.template
 COPY --from=builder /app/dist /usr/share/nginx/html

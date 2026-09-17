@@ -3,7 +3,7 @@ export let mockTeam = [
     id: "m1",
     name: "Ahmed Ali",
     phone: "01012345678",
-    email: "ahmed.ali@glowfix.com",
+    email: "ahmed.ali@example.com",
     status: "ACTIVE",
     isCurrentlyWorking: true,
     completedBookings: 45,
@@ -11,13 +11,13 @@ export let mockTeam = [
     avgRating: 4.9,
     canEditServices: true,
     canEditPrices: true,
-    joinedAt: "2026-01-10T10:00:00Z"
+    joinedAt: "2026-01-10T10:00:00Z",
   },
   {
     id: "m2",
     name: "Mohamed Kamel",
     phone: "01123456789",
-    email: "mohamed.kamel@glowfix.com",
+    email: "mohamed.kamel@example.com",
     status: "ACTIVE",
     isCurrentlyWorking: false,
     completedBookings: 32,
@@ -25,13 +25,13 @@ export let mockTeam = [
     avgRating: 4.7,
     canEditServices: true,
     canEditPrices: false,
-    joinedAt: "2026-02-15T11:00:00Z"
+    joinedAt: "2026-02-15T11:00:00Z",
   },
   {
     id: "m3",
     name: "Youssef Hassan",
     phone: "01234567890",
-    email: "youssef.hassan@glowfix.com",
+    email: "youssef.hassan@example.com",
     status: "ACTIVE",
     isCurrentlyWorking: true,
     completedBookings: 18,
@@ -39,13 +39,13 @@ export let mockTeam = [
     avgRating: 4.5,
     canEditServices: false,
     canEditPrices: false,
-    joinedAt: "2026-03-20T09:30:00Z"
+    joinedAt: "2026-03-20T09:30:00Z",
   },
   {
     id: "m4",
     name: "Mostafa Mahmoud",
     phone: "01545678901",
-    email: "mostafa.mahmoud@glowfix.com",
+    email: "mostafa.mahmoud@example.com",
     status: "SUSPENDED",
     isCurrentlyWorking: false,
     completedBookings: 50,
@@ -53,13 +53,13 @@ export let mockTeam = [
     avgRating: 4.3,
     canEditServices: false,
     canEditPrices: true,
-    joinedAt: "2026-04-05T14:20:00Z"
+    joinedAt: "2026-04-05T14:20:00Z",
   },
   {
     id: "m5",
     name: "Khaled Ibrahim",
     phone: "01098765432",
-    email: "khaled.ibrahim@glowfix.com",
+    email: "khaled.ibrahim@example.com",
     status: "ACTIVE",
     isCurrentlyWorking: false,
     completedBookings: 0,
@@ -67,8 +67,8 @@ export let mockTeam = [
     avgRating: null,
     canEditServices: true,
     canEditPrices: true,
-    joinedAt: "2026-06-01T16:45:00Z"
-  }
+    joinedAt: "2026-06-01T16:45:00Z",
+  },
 ];
 
 export const getMockMembers = () => {
@@ -88,16 +88,14 @@ export const addMockMember = (payload) => {
     avgRating: null,
     canEditServices: payload.canEditServices ?? false,
     canEditPrices: payload.canEditPrices ?? false,
-    joinedAt: new Date().toISOString()
+    joinedAt: new Date().toISOString(),
   };
   mockTeam = [newMember, ...mockTeam]; // Add to top of the list
   return newMember;
 };
 
 export const updateMockMember = (id, payload) => {
-  mockTeam = mockTeam.map((m) =>
-    m.id === id ? { ...m, ...payload } : m
-  );
+  mockTeam = mockTeam.map((m) => (m.id === id ? { ...m, ...payload } : m));
   return mockTeam.find((m) => m.id === id);
 };
 

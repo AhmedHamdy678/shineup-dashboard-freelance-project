@@ -56,7 +56,7 @@ export const mockProviderManagement = {
       owner: {
         id: "00000000-0000-4000-8000-000000000022",
         fullName: "سارة المتقدمة",
-        phone: "0566068677",
+        phone: "0500000000",
         email: "sara.applicant@example.com",
         status: "ACTIVE",
       },
@@ -87,7 +87,7 @@ export const mockProviderManagement = {
       owner: {
         id: "00000000-0000-4000-8000-000000000033",
         fullName: "Inactive Applicant",
-        phone: "0550000033",
+        phone: "0500000000",
         email: "inactive.applicant@example.com",
         status: "INACTIVE",
       },
