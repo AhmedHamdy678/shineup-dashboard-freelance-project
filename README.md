@@ -1,16 +1,40 @@
-# React + Vite
+# 🚀 ShineUp Operations Dashboard
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+![React](https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB)
+![Vite](https://img.shields.io/badge/vite-%23646CFF.svg?style=for-the-badge&logo=vite&logoColor=white)
+![TailwindCSS](https://img.shields.io/badge/tailwindcss-%2338B2AC.svg?style=for-the-badge&logo=tailwind-css&logoColor=white)
+![React Query](https://img.shields.io/badge/-React%20Query-FF4154?style=for-the-badge&logo=react%20query&logoColor=white)
 
-Currently, two official plugins are available:
+A robust, enterprise-level web dashboard built to streamline operations for system administrators and service providers. This platform manages on-demand bookings, financial transactions, and provider profiles with real-time responsiveness.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 📺 Project Showcase
 
-## React Compiler
+* **Demo Video:** [▶️ Watch the Full Walkthrough on YouTube/Loom](YOUR_VIDEO_LINK_HERE)
+* **Live Staging Environment:** [🌐 Visit Live Project](YOUR_DEV_LINK_HERE) 
+  *(Note: For security and client confidentiality, the live environment is restricted by authentication. Please refer to the demo video for an inside look).*
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### 📸 Sneak Peek
+![Provider Bookings Overview](YOUR_GIF_LINK_HERE.gif)
+*(Add a 5-second GIF here showing the bookings filtering or smart timer in action)*
 
-## Expanding the ESLint configuration
+## ✨ Key Technical Highlights
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+* **Proactive State Synchronization (Smart Timer):** Architected a resource-efficient background timer using Native JS APIs and TanStack Query. It auto-invalidates and transitions "Pending" bookings to "Expired" in perfectly synchronized real-time without relying on heavy server polling.
+* **Advanced Data Grids & Filtering:** Implemented complex, multi-state filtering (e.g., Pending Provider Acceptance, Expired, Completed) ensuring UI consistency with strict backend Enum contracts.
+* **Secure Architecture:** Strictly separated environments, properly managing sensitive client credentials and API URLs through abstracted environment variables (`.env`).
+* **Team Collaboration & GitFlow:** Developed within a multi-developer team utilizing professional Git branching strategies, Pull Request reviews, and CI/CD deployment pipelines.
+
+## 🛠️ Tech Stack
+
+* **Core:** React.js, Vite
+* **State Management & Data Fetching:** TanStack Query (React Query)
+* **Styling:** Tailwind CSS / Custom UI Components
+* **Version Control:** Git & GitHub
+
+## 💻 Getting Started (Local Development)
+
+If you'd like to run a local instance using mock data:
+
+1. **Clone the repository:**
+   ```bash
+   git clone [https://github.com/AhmedHamdy678/shineup-dashboard-freelance-project.git](https://github.com/AhmedHamdy678/shineup-dashboard-freelance-project.git)
