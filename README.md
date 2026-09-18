@@ -478,7 +478,8 @@ Output is written to `dist/`. Pair it with the included `Dockerfile` and Nginx c
 
 **Dashboard Overview**
 
-`[IMAGE_PLACEHOLDER: /screenshots/admin-dashboard-overview.png]`
+<img width="1920" height="1035" alt="image" src="https://github.com/user-attachments/assets/2439ae31-1bf1-4799-a4f8-c11c6ac41fe1" />
+
 
 **Bookings Management — Paginated Table with Status Filters**
 
